@@ -20,7 +20,12 @@
 
   .sidebar {
     background-color: #1c212d;
-    width: 17%;
+    width: 300px;
+  }
+
+  .content {
+    width: 83%;
+    overflow-y: scroll;
   }
 }
 
@@ -30,18 +35,6 @@
   width: 100%;
   padding: 15px;
   margin: 0;
-
-  .nav-links {
-    width: 100%;
-    padding: 15px;
-    margin-top: 10px;
-    border-radius: 7px;
-    font-size: 1.1rem;
-
-    .icon {
-      padding-right: 20px;
-    }
-  }
 }
 
 .divider {

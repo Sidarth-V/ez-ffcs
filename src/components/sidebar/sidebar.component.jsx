@@ -50,15 +50,17 @@ const Sidebar = () => {
           />
           <h1>ezFFCS</h1>
         </div>
-        <hr className="divider"></hr>
+        {/* <hr className="divider"></hr> */}
         <div className="nav-links-container">
           {listSidebar.map((element) => {
             return <NavItem key={element.id} data={element} />;
           })}
         </div>
-        <hr className="divider"></hr>
+        {/* <hr className="divider"></hr> */}
       </div>
-      <Outlet />
+      <div className="content">
+        <Outlet />
+      </div>
     </div>
   );
 };
