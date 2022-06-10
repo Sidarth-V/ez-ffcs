@@ -1,0 +1,32 @@
+.table {
+  padding: 20px;
+  th,
+  td {
+    padding: 10px;
+    text-align: center;
+    border-radius: 4px;
+  }
+}
+
+.theory-hrs {
+  background-color: #ccccff;
+}
+
+.lab-hrs {
+  background-color: #99ccff;
+}
+
+.classes {
+  background-color: #ffffcc;
+  &:hover {
+    background-color: #f6b34e;
+  }
+}
+
+.classes-green {
+  background-color: #ccffcc;
+}
+
+.grey-bg {
+  background-color: #c0c0c0;
+}

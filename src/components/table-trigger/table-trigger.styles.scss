@@ -1,0 +1,20 @@
+.trigger-containter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.icon-rotate {
+  --fa-animation-duration: 0.9s;
+}
+
+.icon-rotate-reverse {
+  --fa-animation-direction: reverse;
+  --fa-animation-duration: 0.9s;
+}
+
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

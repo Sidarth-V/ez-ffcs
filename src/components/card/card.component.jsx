@@ -1,7 +1,9 @@
+import { useState } from "react";
 import "./card.styles.scss";
+import Modal from "../modal/modal.component";
 
-const Card = ({ teacher }) => {
-  const { empId, empName, courseCode, rating, feedback } = teacher;
+const Card = ({ teacher, onFeedbackChange }) => {
+  const { empId, empName, courseCode, rating, feedback, _id } = teacher;
   let className;
   if (rating <= 0) {
     className = "tag tag-red";
@@ -10,6 +12,16 @@ const Card = ({ teacher }) => {
   } else if (rating >= 4) {
     className = "tag tag-green";
   }
+
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   return (
     <div className="card-container">
@@ -22,10 +34,19 @@ const Card = ({ teacher }) => {
         <h2>{empName}</h2>
         <div className={className}>{rating}</div>
       </div>
-      <p>{feedback}</p>
+      <span>{feedback}</span>
       <div className="card-cc-container">
         <small>{courseCode}</small>
-        <button>Edit</button>
+        <button onClick={handleOpenModal}>Edit</button>
+        <Modal
+          showModal={showModal}
+          handleCloseModal={handleCloseModal}
+          facultyName={empName}
+          rating={rating}
+          feedback={feedback}
+          onFeedbackChange={onFeedbackChange}
+          id={_id}
+        />
       </div>
     </div>
   );

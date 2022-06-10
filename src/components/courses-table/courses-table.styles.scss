@@ -1,0 +1,27 @@
+.Collapsible {
+  padding: 10px 50px 30px 50px;
+
+  table {
+    width: 100%;
+    border: 1px solid black;
+    border-collapse: collapse;
+
+    thead {
+      font-size: 20px;
+      background-color: #ccccff;
+    }
+    td,
+    th {
+      padding: 5px;
+      text-align: center;
+      border: 1px solid rgb(141, 136, 136);
+      border-collapse: collapse;
+    }
+    tbody {
+      td {
+        background-color: #99ccff;
+        font-weight: 600;
+      }
+    }
+  }
+}

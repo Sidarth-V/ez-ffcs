@@ -1,11 +1,13 @@
 .search-box {
   -webkit-appearance: none;
   border: 1px double;
-  border-color: rgb(229, 229, 229);
+  border-color: rgb(49, 54, 60);
   border-radius: 4px;
   font-family: monospace;
   outline: none;
   padding: 10px;
   width: 25%;
   line-height: 30px;
+  background-color: rgb(15, 17, 22);
+  color: white;
 }

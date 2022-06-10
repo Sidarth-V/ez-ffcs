@@ -1,0 +1,16 @@
+.modal-header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  button {
+    border: none;
+    padding: 5px;
+    background-color: transparent;
+    height: fit-content;
+  }
+
+  i {
+    color: orange;
+  }
+}

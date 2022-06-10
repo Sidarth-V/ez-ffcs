@@ -37,7 +37,8 @@ const ViewTeachers = () => {
     });
 
     const filterByCourseCodes = filterBySearch.filter((teacher) => {
-      return teacher.courseCode.includes(courseCode);
+      let re = new RegExp(courseCode, "gi");
+      return teacher.courseCode.match(re);
     });
 
     setFilteredTeachers(filterByCourseCodes);
@@ -55,6 +56,17 @@ const ViewTeachers = () => {
     }
   };
 
+  const feedbackChange = () => {
+    axios
+      .get("http://localhost:8000/allTeachers")
+      .then((response) => {
+        return response.data;
+      })
+      .then((users) => {
+        setTeachers(users);
+      });
+  };
+
   return (
     <div className="view-teachers-container">
       <MenuBar
@@ -62,7 +74,7 @@ const ViewTeachers = () => {
         onCourseCodeChangeHandler={onCourseCodeChange}
         allCourses={allCourses}
       />
-      <CardList teachers={filteredTeachers} />
+      <CardList teachers={filteredTeachers} onFeedbackChange={feedbackChange} />
     </div>
   );
 };
