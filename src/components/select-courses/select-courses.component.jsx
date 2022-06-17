@@ -43,6 +43,13 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
       defaultValue={""}
       styles={customStyles}
       placeholder={"course code"}
+      theme={(theme) => ({
+        ...theme,
+        colors: {
+          ...theme.colors,
+          neutral80: "white",
+        },
+      })}
     />
   );
 };
