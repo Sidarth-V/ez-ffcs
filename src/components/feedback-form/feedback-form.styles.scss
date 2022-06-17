@@ -42,7 +42,7 @@
     }
     .ra2:hover,
     input[class="ra2"]:checked + .fa2 {
-      color: yellow;
+      color: rgb(255, 166, 0);
     }
     .ra3:hover,
     input[class="ra3"]:checked + .fa3 {
@@ -50,11 +50,11 @@
     }
     .ra4:hover,
     input[class="ra4"]:checked + .fa4 {
-      color: rgb(64, 255, 175);
+      color: rgb(64, 226, 255);
     }
     .ra5:hover,
     input[class="ra5"]:checked + .fa5 {
-      color: green;
+      color: rgb(0, 204, 0);
       background-color: rgb(32, 30, 30);
     }
     input[type="radio"] {

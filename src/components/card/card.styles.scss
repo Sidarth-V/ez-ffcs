@@ -13,11 +13,9 @@
   backface-visibility: hidden;
   transform: translateZ(0);
   transition: transform 0.25s ease-out;
-
   &:hover {
     transform: scale(1.05);
   }
-
   img {
     width: 100%;
   }
@@ -46,20 +44,30 @@
       text-transform: uppercase;
       cursor: pointer;
     }
-    .tag-green {
-      background-color: #38e83843;
-      color: #38e838;
-      border: 1px solid #38e838;
-    }
     .tag-red {
       background-color: #ff00003a;
       color: #ff0000;
       border: 1px solid #ff0000;
     }
-    .tag-yellow {
+    .tag-orange {
       background-color: #ffd90048;
-      color: #ffd700;
-      border: 1px solid #ffd700;
+      color: rgb(255, 166, 0);
+      border: 1px solid rgb(255, 166, 0);
+    }
+    .tag-grey {
+      background-color: rgba(112, 128, 144, 0.281);
+      color: slategrey;
+      border: 1px solid slategrey;
+    }
+    .tag-blue {
+      background-color: rgba(64, 226, 255, 0.411);
+      color: rgb(64, 226, 255);
+      border: 1px solid rgb(64, 226, 255);
+    }
+    .tag-green {
+      background-color: #38e83843;
+      color: rgb(0, 204, 0);
+      border: 1px solid rgb(0, 204, 0);
     }
   }
   .card-cc-container {
@@ -73,7 +81,6 @@
       padding: 5px 10px 5px 10px;
       border-radius: 3px;
       cursor: pointer;
-
       &:hover {
         animation: shake 1s;
       }
