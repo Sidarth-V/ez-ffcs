@@ -35,34 +35,6 @@ const FeedbackForm = ({ rating, onSubmitHandler, feedback }) => {
            />
         ))
         }
-        {/* <RatingNumber
-          newRating={rate}
-          val={1}
-          labelClass="ra1"
-          faIcon={fa1}
-          faClass="f fa1"
-          func={handleChange}
-        />
-        <label htmlFor="r2" className="ra2">
-          <input type="radio" name="rating" className="ra2" id="ra2" value={2}
-          checked={rate===2} onClick={handleChange}/>
-          <FontAwesomeIcon icon={fa2} className="f fa2"/>
-        </label>
-        <label htmlFor="r3" className="ra3">
-          <input type="radio" name="rating" className="ra3" id="ra3" value={3}
-          checked={rate===3} onClick={handleChange}/>
-          <FontAwesomeIcon icon={fa3} className="f fa3"/>
-        </label>
-        <label htmlFor="r4" className="ra4">
-          <input type="radio" name="rating" className="ra4" id="ra4" value={4}
-          checked={rate===4} onClick={handleChange}/>
-          <FontAwesomeIcon icon={fa4} className="f fa4"/>
-        </label>
-        <label htmlFor="r5" className="ra5">
-          <input type="radio" name="rating" className="ra5" id="ra5" value={5}
-          checked={rate===5} onClick={handleChange}/>
-          <FontAwesomeIcon icon={fa5} className="f fa5"/>
-        </label> */}
       </fieldset>
       <div className="flexDiv">
           <input type="submit" value="Submit" />
