@@ -1,0 +1,86 @@
+.fb-form {
+  display: flex;
+  flex-direction: column;
+  fieldset {
+    textarea {
+      border: none;
+      width: 100%;
+      margin-top: 0;
+      background-color: rgb(46, 45, 45);
+      color: white;
+      padding: 0.3rem;
+      border-radius: 5px;
+    }
+    margin-bottom: 1rem;
+    legend,
+    label {
+      color: white;
+    }
+    legend {
+      border: 1px;
+    }
+  }
+  .rating {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    .f {
+      height: 1rem;
+      width: 1rem;
+      // margin: 0.2rem;
+      transition: 0.5s;
+      padding: 7px;
+      border-radius: 20px;
+      border: solid;
+    }
+    input[type="radio"]:checked + .f {
+      border: solid;
+    }
+    .ra1:hover,
+    input[class="ra1"]:checked + .fa1 {
+      color: red;
+    }
+    .ra2:hover,
+    input[class="ra2"]:checked + .fa2 {
+      color: rgb(255, 166, 0);
+    }
+    .ra3:hover,
+    input[class="ra3"]:checked + .fa3 {
+      color: slategrey;
+    }
+    .ra4:hover,
+    input[class="ra4"]:checked + .fa4 {
+      color: rgb(64, 226, 255);
+    }
+    .ra5:hover,
+    input[class="ra5"]:checked + .fa5 {
+      color: rgb(0, 204, 0);
+      background-color: rgb(32, 30, 30);
+    }
+    input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      height: 1.2rem;
+      width: 1.2rem;
+      cursor: pointer;
+    }
+  }
+  .flexDiv {
+    display: flex;
+    justify-content: center;
+    input[type="submit"] {
+      font-family: monospace;
+      background-color: orange;
+      color: white;
+      font-weight: bold;
+      width: 15%;
+      border: none;
+      padding: 5px 10px 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      &:hover {
+        animation: shake 1s;
+      }
+    }
+  }
+}

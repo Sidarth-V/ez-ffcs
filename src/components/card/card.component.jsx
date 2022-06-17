@@ -5,12 +5,25 @@ import Modal from "../modal/modal.component";
 const Card = ({ teacher, onFeedbackChange }) => {
   const { empId, empName, courseCode, rating, feedback, _id } = teacher;
   let className;
-  if (rating <= 0) {
-    className = "tag tag-red";
-  } else if (rating >= 1 && rating <= 3) {
-    className = "tag tag-yellow";
-  } else if (rating >= 4) {
-    className = "tag tag-green";
+  switch (rating) {
+    case 1:
+      className = "tag tag-red";
+      break;
+    case 2:
+      className = "tag tag-orange";
+      break;
+    case 3:
+      className = "tag tag-grey";
+      break;
+    case 4:
+      className = "tag tag-blue";
+      break;
+    case 5:
+      className = "tag tag-green";
+      break;
+    default:
+      className = "tag tag-grey";
+      break;
   }
 
   const [showModal, setShowModal] = useState(false);
