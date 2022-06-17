@@ -26,20 +26,26 @@ const MakeTimeTable = () => {
       .then((courses) => {
         setAllCourses(courses);
       });
+  }, []);
 
+  const makeTimetables = (courses) => {
     axios
-      .get("http://localhost:8000/allTimetables")
+      .post("http://localhost:8000/allTimetables", { courses })
       .then((response) => {
         return response.data;
       })
       .then((allConfigs) => {
         setAllConfigs(allConfigs);
       });
-  }, []);
+  };
 
   return (
     <div className="make-tt-container">
-      <MakeTableForm allCourses={allCourses} allTeachers={teachers} />
+      <MakeTableForm
+        allCourses={allCourses}
+        allTeachers={teachers}
+        makeTimetablesHandler={makeTimetables}
+      />
       <TimeTableList allConfigs={allConfigs} />
     </div>
   );

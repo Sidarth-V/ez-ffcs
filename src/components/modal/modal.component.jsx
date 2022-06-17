@@ -26,9 +26,6 @@ const Modal = ({
       })
       .then((response) => {
         onFeedbackChange();
-      })
-      .catch(function (error) {
-        console.log(error);
       });
     handleCloseModal();
   };

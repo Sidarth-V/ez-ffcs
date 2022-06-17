@@ -31,6 +31,7 @@ const FeedbackForm = ({ rating, onSubmitHandler, feedback }) => {
             faIcon={fas[i - 1]}
             faClass={`f fa${i}`}
             func={handleChange}
+            key={i}
           />
         ))}
       </fieldset>
