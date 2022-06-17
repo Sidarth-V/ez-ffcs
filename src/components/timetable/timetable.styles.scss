@@ -1,5 +1,9 @@
+.time-table-container {
+  height: 100%;
+  padding: 25px;
+}
+
 .table {
-  padding: 20px;
   th,
   td {
     padding: 10px;
@@ -17,14 +21,21 @@
 }
 
 .classes {
-  background-color: #ffffcc;
-  &:hover {
-    background-color: #f6b34e;
-  }
+  // background-color: #ffffcc;
+  color: white;
+  background-color: #251d13e7;
+  // border: 1px solid #d4d62f;
+  // &:hover {
+  //   background-color: #f6b34e;
+  // }
 }
 
 .classes-green {
-  background-color: #ccffcc;
+  background-color: #38e83898;
+  color: white;
+  // border: 1px solid #38e838;
+  // background-color: #ccffcc;
+  // border: 1px solid #80ff52;
 }
 
 .grey-bg {

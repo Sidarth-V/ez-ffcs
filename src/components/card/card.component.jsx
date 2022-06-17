@@ -26,7 +26,7 @@ const Card = ({ teacher, onFeedbackChange }) => {
   return (
     <div className="card-container">
       <img
-        src={`https://avatars.dicebear.com/api/adventurer/${empId}.svg?background=%232a3247e8`}
+        src={`https://avatars.dicebear.com/api/adventurer/${empId}.svg?background=%232a222936`}
         alt="rover"
       />
       <div className="flex-container">

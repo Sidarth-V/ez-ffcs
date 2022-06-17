@@ -5,7 +5,7 @@ const TimeTable = ({ slots, config, index }) => {
   const days = ["MON", "TUE", "WED", "THU", "FRI"];
 
   return (
-    <div>
+    <div className="time-table-container">
       <div className="table">
         <table key={index}>
           <tbody>
@@ -129,7 +129,13 @@ const TimeTable = ({ slots, config, index }) => {
                   {slots[i].map((slot) => {
                     if (slot.data) {
                       return (
-                        <td className="classes-green" key={slot.id}>
+                        <td
+                          className="classes-green"
+                          key={slot.id}
+                          style={{
+                            backgroundColor: `#${slot.color}`,
+                          }}
+                        >
                           {slot.data}
                         </td>
                       );

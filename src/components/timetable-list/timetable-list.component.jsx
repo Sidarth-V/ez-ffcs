@@ -1,4 +1,6 @@
 import TimeTable from "../timetable/timetable.component";
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import { Carousel } from "react-responsive-carousel";
 
 const TimeTableList = ({ allConfigs }) => {
   const convertToSlots = (config) => {
@@ -274,7 +276,18 @@ const TimeTableList = ({ allConfigs }) => {
         },
       ],
     ];
-    config.forEach((subject) => {
+    let colors = [
+      "E91E63",
+      "60C689",
+      "272AB0",
+      "9C27B0",
+      "57DCBE",
+      "5727B0",
+      "276BB0",
+      "57ACDC",
+    ];
+    config.forEach((subject, index) => {
+      let color = colors[index];
       subject.theorySlot.split("+").forEach((theorySlot) => {
         slots.forEach((daySlots) => {
           daySlots.forEach((slot) => {
@@ -282,6 +295,7 @@ const TimeTableList = ({ allConfigs }) => {
             if (slot.slot.match(exp)) {
               let data = `${subject.courseCode}-TH-${theorySlot}-${subject.theoryVenue}`;
               slot.data = data;
+              slot.color = color;
             }
           });
         });
@@ -295,6 +309,7 @@ const TimeTableList = ({ allConfigs }) => {
               if (slot.slot.match(exp)) {
                 let data = `${subject.courseCode}-ELA-${labSlot}-${subject.labVenue}`;
                 slot.data = data;
+                slot.color = color;
               }
             });
           });
@@ -305,12 +320,12 @@ const TimeTableList = ({ allConfigs }) => {
   };
 
   return (
-    <div>
+    <Carousel showIndicators={false} useKeyboardArrows showThumbs={false}>
       {allConfigs.map((config, i) => {
         let slotData = convertToSlots(config);
         return <TimeTable slots={slotData} key={i} config={config} index={i} />;
       })}
-    </div>
+    </Carousel>
   );
 };
 
