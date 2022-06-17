@@ -5,9 +5,9 @@ import Modal from "../modal/modal.component";
 const Card = ({ teacher, onFeedbackChange }) => {
   const { empId, empName, courseCode, rating, feedback, _id } = teacher;
   let className;
-  if (rating <= 0) {
+  if (rating == 1) {
     className = "tag tag-red";
-  } else if (rating >= 1 && rating <= 3) {
+  } else if (rating > 1 && rating <= 3) {
     className = "tag tag-yellow";
   } else if (rating >= 4) {
     className = "tag tag-green";
