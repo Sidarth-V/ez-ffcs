@@ -19,7 +19,7 @@ const Modal = ({
   const onFormSumbit = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:8000/setFeedBack", {
+      .post(`${process.env.REACT_APP_BACKEND_URL}update-feedback`, {
         id: id,
         feedback: e.target.feedback.value,
         rating: e.target.rating.value,

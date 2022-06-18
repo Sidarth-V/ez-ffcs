@@ -22,14 +22,17 @@ const DropdownGroup = ({
   };
 
   useEffect(() => {
-    axios
-      .post("http://localhost:8000/teachersForCourse", {
-        courseCode: courseCode,
-      })
-      .then((response) => {
-        setFilteredTeachers(response.data);
-      });
-  }, [isDisabled, courseCode]);
+    if (courseCode.length > 1) {
+      axios
+        .post(`${process.env.REACT_APP_BACKEND_URL}view-teachers`, {
+          courseCode: courseCode,
+        })
+        .then((response) => {
+          setFilteredTeachers(response.data.data.teachers);
+        });
+    }
+  }, [courseCode, isDisabled]);
+
   return (
     <div className="subject">
       <SelectCourses

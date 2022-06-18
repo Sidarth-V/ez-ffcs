@@ -27,12 +27,11 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
     let newFormValues = [...formValues];
     if (e) {
       newFormValues[i][j].courseCode = e.value;
-      setFormValues(newFormValues);
     } else {
       newFormValues[i][j].courseCode = "";
       newFormValues[i][j].teacher = "";
-      setFormValues(newFormValues);
     }
+    setFormValues(newFormValues);
   };
 
   const handleTeacherChange = (e, i, j) => {

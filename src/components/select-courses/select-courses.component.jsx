@@ -5,7 +5,7 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
     control: (base) => ({
       ...base,
       height: 52,
-      width: 200,
+      width: 300,
       background: "rgb(15, 17, 22)",
       color: "white",
       boxShadow: "none",
@@ -13,15 +13,6 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
       ":hover": {
         boxShadow: "none",
         border: "1px solid rgb(49, 54, 60)",
-      },
-    }),
-    option: (styles) => ({
-      ...styles,
-      backgroundColor: "rgb(15, 17, 22)",
-      color: "white",
-      ":hover": {
-        backgroundColor: "rgb(49, 54, 60)",
-        color: "white",
       },
     }),
     menu: (provided) => ({
@@ -48,6 +39,8 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
         colors: {
           ...theme.colors,
           neutral80: "white",
+          primary25: "rgb(49, 54, 60)",
+          primary: "orange",
         },
       })}
     />
