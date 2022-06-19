@@ -48,15 +48,13 @@ const Sidebar = () => {
             className="logo"
             transform={{ rotate: -30 }}
           />
-          <h1>ezFFCS</h1>
+          <span>ezFFCS</span>
         </div>
-        {/* <hr className="divider"></hr> */}
         <div className="nav-links-container">
           {listSidebar.map((element) => {
             return <NavItem key={element.id} data={element} />;
           })}
         </div>
-        {/* <hr className="divider"></hr> */}
       </div>
       <div className="content">
         <Outlet />

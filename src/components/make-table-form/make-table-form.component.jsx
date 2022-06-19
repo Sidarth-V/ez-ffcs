@@ -115,9 +115,7 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
           <div className="credit-type">Project</div>&nbsp;&nbsp;
           <div className="project-counter-container">{jComp}</div>
         </div>
-        <div>
-          <SubmitButton />
-        </div>
+        <SubmitButton />
         <div className="lab-project-container">
           <div className="credit-type">Total</div>
           <div className="credit-counter-container">{credits}</div>

@@ -1,24 +1,10 @@
-.custom-carousel-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  height: 100%;
-
-  .timetable-nav-buttons {
-    padding: 5px;
-    background-color: rgba(128, 128, 128, 0.079);
-    color: white;
-    border: none;
-    font-size: x-large;
-    border-radius: 5px;
-
-    &:hover {
-      background-color: rgba(128, 128, 128, 0.473);
-    }
-  }
-}
-
 .timetable-name {
   color: white;
   padding-left: 30px;
+}
+
+.delete-timetable-container {
+  display: flex;
+  justify-content: center;
+  padding: 2%;
 }

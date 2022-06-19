@@ -4,8 +4,9 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
   const customStyles = {
     control: (base) => ({
       ...base,
-      height: 52,
-      width: 300,
+      height: "6vh",
+      width: "20vw",
+      fontSize: "0.8vmax",
       background: "rgb(15, 17, 22)",
       color: "white",
       boxShadow: "none",
@@ -23,7 +24,8 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
     }),
     option: (styles) => ({
       ...styles,
-      cursor: 'pointer',
+      cursor: "pointer",
+      fontSize: "0.8vmax",
     }),
   };
   return (

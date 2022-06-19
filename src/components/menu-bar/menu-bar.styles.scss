@@ -1,12 +1,6 @@
 .menu-bar-container {
-    padding-right: 30px;
-    padding-left: 30px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    .course-code-dropdown {
-        padding: 10px;
-    }
+  padding-bottom: 2vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }

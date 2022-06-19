@@ -3,10 +3,16 @@
   color: white;
   justify-content: center;
   align-items: center;
-  padding-top: 20px;
+  padding: 10% 0%;
+
+  span {
+    font-size: 1.8vmax;
+    font-weight: bold;
+    padding: 2%;
+  }
 
   .logo {
-    height: 50px;
+    height: 4vmax;
     color: orange;
   }
 }
@@ -21,11 +27,12 @@
 
   .sidebar {
     background-color: rgb(15, 17, 22);
-    width: 17%;
+    width: 18vw;
+    height: 100%;
   }
 
   .content {
-    width: 83%;
+    width: 82vw;
     overflow-y: scroll;
   }
 }
@@ -33,12 +40,8 @@
 .nav-links-container {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   width: 100%;
-  padding: 15px;
+  padding: 2% 5%;
   margin: 0;
-}
-
-.divider {
-  width: 85%;
-  margin-top: 20px;
 }

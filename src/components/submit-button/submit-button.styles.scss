@@ -1,17 +1,17 @@
 .button-section {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    button {
-        background-color: orange;
-        border: none;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 4px;
-        text-align: center;
-        text-decoration: none;
-        font-size: 1rem;
-        font-weight: bold;
-        font-family: monospace;
-    }
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  button {
+    background-color: orange;
+    border: none;
+    color: white;
+    padding: 1% 2%;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1vmax;
+    font-weight: bold;
+  }
 }

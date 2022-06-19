@@ -1,53 +1,61 @@
 body {
-    margin: 0;
-    font-family: monospace;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: rgb(3, 4, 8);
-    /* total width */
-     ::-webkit-scrollbar {
-        background-color: transparent;
-        width: 0.3rem;
-    }
-    /* background of the scrollbar except button or resizer */
-     ::-webkit-scrollbar-track {
-        background-color: transparent;
-    }
-     ::-webkit-scrollbar-track:hover {
-        background-color: transparent;
-    }
-    /* scrollbar itself */
-     ::-webkit-scrollbar-thumb {
-        background-color: #363636;
-        border-radius: 16px;
-    }
-     ::-webkit-scrollbar-thumb:hover {
-        background-color: #a0a0a5;
-    }
-    /* set button(top and bottom of the scrollbar) */
-     ::-webkit-scrollbar-button {
-        display: none;
-    }
-}
-
-code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: rgb(3, 4, 8);
+  ::-webkit-scrollbar {
+    background-color: transparent;
+    width: 0.3rem;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  ::-webkit-scrollbar-track:hover {
+    background-color: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #363636;
+    border-radius: 16px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #a0a0a5;
+  }
+  ::-webkit-scrollbar-button {
+    display: none;
+  }
 }
 
 * {
-    box-sizing: border-box;
-    &:focus {
-        outline: none;
-        box-shadow: none;
-    }
+  box-sizing: border-box;
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  font-family: "Roboto Mono";
 }
 
 a {
-    text-decoration: none;
-    color: white;
+  text-decoration: none;
+  color: white;
 }
 
 #root {
-    --toastify-color-progress-success: linear-gradient( to right, #4cd964, #5ac8fa, #007aff, #34aadc, #5856d6, #ff2d55);
-    --toastify-color-progress-info: linear-gradient( to right, #4cd964, #5ac8fa, #007aff, #34aadc, #5856d6, #ff2d55);
+  --toastify-color-progress-success: linear-gradient(
+    to right,
+    #4cd964,
+    #5ac8fa,
+    #007aff,
+    #34aadc,
+    #5856d6,
+    #ff2d55
+  );
+  --toastify-color-progress-info: linear-gradient(
+    to right,
+    #4cd964,
+    #5ac8fa,
+    #007aff,
+    #34aadc,
+    #5856d6,
+    #ff2d55
+  );
 }
