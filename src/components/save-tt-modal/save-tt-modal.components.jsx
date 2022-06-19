@@ -1,44 +1,42 @@
 import ReactModal from "react-modal";
-import FeedbackForm from "../feedback-form/feedback-form.component";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import "./modal.styles.scss";
-import axios from "axios";
+import "./save-tt-modal.styles.scss";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 
 ReactModal.setAppElement("#root");
 
-const Modal = ({
-  showModal,
-  handleCloseModal,
-  facultyName,
-  rating,
-  feedback,
-  onFeedbackChange,
-  id,
-}) => {
+const SaveTimetableModal = ({ showModal, handleCloseModal, config }) => {
   const onFormSumbit = (e) => {
     const toastId = toast.loading("Please wait...", { theme: "dark" });
     e.preventDefault();
     axios
-      .post(`${process.env.REACT_APP_BACKEND_URL}update-feedback`, {
-        id: id,
-        feedback: e.target.feedback.value,
-        rating: e.target.rating.value,
+      .post(`${process.env.REACT_APP_BACKEND_URL}save-timetable`, {
+        timeTable: config,
+        timeTableName: e.target.timetableName.value,
       })
       .then((response) => {
         toast.update(toastId, {
-          render: `Updated ${response.data.data.empName}`,
+          render: `Saved timetable`,
           type: "success",
           isLoading: false,
           autoClose: 2000,
+          delay: 10,
         });
-        onFeedbackChange();
+      })
+      .catch((error) => {
+        toast.update(toastId, {
+          render: `${error.response.data.message}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 2000,
+          delay: 10,
+        });
       });
+
     handleCloseModal();
   };
-
   return (
     <ReactModal
       isOpen={showModal}
@@ -73,20 +71,29 @@ const Modal = ({
       }}
     >
       <div className="modal-header-container">
-        <h1>
-          Set <i>{facultyName}</i> rating
-        </h1>
+        <h1>Save timetable as</h1>
         <button onClick={handleCloseModal}>
           <FontAwesomeIcon icon={faTimes} size="2xl" className="logo" />
         </button>
       </div>
-      <FeedbackForm
-        rating={rating}
-        onSubmitHandler={onFormSumbit}
-        feedback={feedback}
-      />
+      <div className="save-tt-form-container">
+        <form onSubmit={onFormSumbit}>
+          <fieldset>
+            <legend>Timetable Name</legend>
+            <textarea
+              rows={1}
+              placeholder="name of timetable"
+              name="timetableName"
+              required
+            />
+          </fieldset>
+          <div className="save-tt-submit">
+            <button type="submit">Save</button>
+          </div>
+        </form>
+      </div>
     </ReactModal>
   );
 };
 
-export default Modal;
+export default SaveTimetableModal;

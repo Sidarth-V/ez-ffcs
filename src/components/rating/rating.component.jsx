@@ -7,7 +7,6 @@ const RatingNumber = ({
   faClass,
   func,
 }) => {
-  console.log(faIcon);
   return (
     <label className={labelClass}>
       <input
@@ -17,7 +16,7 @@ const RatingNumber = ({
         id={labelClass}
         value={val}
         checked={newRating === val}
-        onClick={func}
+        onChange={func}
       />
       <FontAwesomeIcon icon={faIcon} className={faClass} />
     </label>

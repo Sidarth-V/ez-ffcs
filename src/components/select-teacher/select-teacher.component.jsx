@@ -1,11 +1,11 @@
 import Select from "react-select";
 
-const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
+const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
   const customStyles = {
     control: (base) => ({
       ...base,
       height: 52,
-      width: 300,
+      width: 200,
       background: "rgb(15, 17, 22)",
       color: "white",
       boxShadow: "none",
@@ -27,13 +27,13 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
   };
   return (
     <Select
-      options={allCourses}
-      onChange={onCourseCodeChangeHandler}
+      options={allTeachers}
+      onChange={onTeacherChangeHandler}
       isClearable={true}
       isSearchable={true}
-      defaultValue={""}
       styles={customStyles}
-      placeholder={"course code"}
+      placeholder={"select teacher ;)"}
+      isDisabled={isDisabled}
       theme={(theme) => ({
         ...theme,
         colors: {
@@ -47,4 +47,4 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
   );
 };
 
-export default SelectCourses;
+export default SelectTeacher;

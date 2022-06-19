@@ -1,7 +1,5 @@
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import "./courses-table.styles.scss";
-import Collapsible from "react-collapsible";
-import TableTrigger from "../table-trigger/table-trigger.component";
 
 const CoursesTable = ({ config }) => {
   const characters =
@@ -13,31 +11,12 @@ const CoursesTable = ({ config }) => {
     for (let i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-
     return result;
   };
 
-  const [isOpen, setOpen] = useState(false);
-  const [isChanging, setIsChanging] = useState(false);
-
-  const handleIcon = () => {
-    setIsChanging(false);
-    setOpen(!isOpen);
-  };
-
-  const rotateIcon = () => {
-    setIsChanging(true);
-  };
-
   return (
-    <Collapsible
-      trigger={<TableTrigger icon={isOpen} rotation={isChanging} />}
-      onOpen={handleIcon}
-      onClose={handleIcon}
-      onOpening={rotateIcon}
-      onClosing={rotateIcon}
-    >
-      <table>
+    <div className="course-table-container">
+      <table className="course-table">
         <thead>
           <tr>
             <th>Slot</th>
@@ -85,7 +64,7 @@ const CoursesTable = ({ config }) => {
           })}
         </tbody>
       </table>
-    </Collapsible>
+    </div>
   );
 };
 
