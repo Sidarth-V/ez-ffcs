@@ -301,10 +301,10 @@ const TimeTableList = ({ allConfigs }) => {
     ];
     let colors = [
       "E91E63",
-      "60C689",
+      "E9594c",
       "272AB0",
       "9C27B0",
-      "57DCBE",
+      "24A993",
       "5727B0",
       "276BB0",
       "57ACDC",

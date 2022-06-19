@@ -10,6 +10,7 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
       color: "white",
       boxShadow: "none",
       border: "1px solid rgb(49, 54, 60)",
+      cursor: 'pointer',
       ":hover": {
         boxShadow: "none",
         border: "1px solid rgb(49, 54, 60)",
@@ -20,9 +21,9 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
       backgroundColor: "rgb(15, 17, 22)",
       color: "white",
     }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: "white",
+    option: (styles) => ({
+      ...styles,
+      cursor: 'pointer',
     }),
   };
   return (

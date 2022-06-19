@@ -110,15 +110,18 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
     <form onSubmit={handleSubmit}>
       <div className="header-container">
         <div className="lab-project-container">
-          <div>Lab</div>
-          <div className="lab-counter-container">{labComp}</div>
-          <div>Project</div>
+          <div className="credit-type">Lab</div>&nbsp;&nbsp;
+          <div className="lab-counter-container">{labComp}</div> &nbsp;&nbsp;
+          <div className="credit-type">Project</div>&nbsp;&nbsp;
           <div className="project-counter-container">{jComp}</div>
         </div>
         <div>
           <SubmitButton />
         </div>
-        <div className="credit-counter-container">{credits}</div>
+        <div className="lab-project-container">
+          <div className="credit-type">Total</div>
+          <div className="credit-counter-container">{credits}</div>
+        </div>
       </div>
       <table>
         <tbody>
