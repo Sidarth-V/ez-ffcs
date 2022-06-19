@@ -13,20 +13,14 @@ const ViewTeachers = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/allTeachers")
+      .get(`${process.env.REACT_APP_BACKEND_URL}view-teachers`)
       .then((response) => {
-        return response.data;
-      })
-      .then((users) => {
-        setTeachers(users);
+        setTeachers(response.data.data.teachers);
       });
     axios
-      .get("http://localhost:8000/allCourses")
+      .get(`${process.env.REACT_APP_BACKEND_URL}view-courses`)
       .then((response) => {
-        return response.data;
-      })
-      .then((courses) => {
-        setAllCourses(courses);
+        convertToCourseOptions(response.data.data.courses);
       });
   }, []);
 
@@ -44,6 +38,16 @@ const ViewTeachers = () => {
     setFilteredTeachers(filterByCourseCodes);
   }, [teachers, search, courseCode]);
 
+  const convertToCourseOptions = (courses) => {
+    let options = courses.map((course) => {
+      return {
+        value: course.courseCode,
+        label: `${course.courseCode} - ${course.courseTitle}`,
+      };
+    });
+    setAllCourses(options);
+  };
+
   const onSearchChange = (event) => {
     setSearch(event.target.value);
   };
@@ -58,12 +62,9 @@ const ViewTeachers = () => {
 
   const feedbackChange = () => {
     axios
-      .get("http://localhost:8000/allTeachers")
+      .get(`${process.env.REACT_APP_BACKEND_URL}view-teachers`)
       .then((response) => {
-        return response.data;
-      })
-      .then((users) => {
-        setTeachers(users);
+        setTeachers(response.data.data.teachers);
       });
   };
 

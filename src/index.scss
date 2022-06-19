@@ -13,6 +13,10 @@ code {
 
 * {
   box-sizing: border-box;
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
 }
 
 a {

@@ -1,4 +1,12 @@
 .make-tt-container {
   width: 100%;
-  padding: 20px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+
+  .rings-loader {
+    padding: 30px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
 }
