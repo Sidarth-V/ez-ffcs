@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SubmitButton from "../submit-button/submit-button.component";
 import DropdownGroup from "../dropdown-group/dropdown-group.component";
 import "./make-table-form.styles.scss";
@@ -22,6 +22,17 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
       { courseCode: "", teacher: "" },
     ],
   ]);
+  const [courseOptions, setCourseOptions] = useState([]);
+
+  useEffect(() => {
+    let options = allCourses.map((course) => {
+      return {
+        value: course.courseCode,
+        label: `${course.courseCode} - ${course.courseTitle}`,
+      };
+    });
+    setCourseOptions(options);
+  }, [allCourses]);
 
   const handleCourseCodeChange = (e, i, j) => {
     let newFormValues = [...formValues];
@@ -45,7 +56,7 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
     }
   };
 
-  const filteredCourses = allCourses.filter((course) => {
+  const filteredCourses = courseOptions.filter((course) => {
     let allCoursesTaken = [];
 
     formValues.forEach((row) => {
@@ -56,6 +67,31 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
 
     return !allCoursesTaken.includes(course.value);
   });
+
+  const dynamicValues = () => {
+    let credits = 0;
+    let jComp = 0;
+    let labComp = 0;
+    let allCoursesTaken = [];
+
+    formValues.forEach((row) => {
+      row.forEach((element) => {
+        if (element.courseCode) allCoursesTaken.push(element.courseCode);
+      });
+    });
+
+    allCoursesTaken.forEach((courseCode) => {
+      let objFound = allCourses.find(
+        (course) => course.courseCode === courseCode
+      );
+      credits += objFound.creditCount;
+      if (objFound.hasProject) jComp += 1;
+      if (objFound.hasLab) labComp += 1;
+    });
+    return { credits, jComp, labComp };
+  };
+
+  let { credits, jComp, labComp } = dynamicValues();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -72,7 +108,18 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <SubmitButton />
+      <div className="header-container">
+        <div className="lab-project-container">
+          <div>Lab</div>
+          <div className="lab-counter-container">{labComp}</div>
+          <div>Project</div>
+          <div className="project-counter-container">{jComp}</div>
+        </div>
+        <div>
+          <SubmitButton />
+        </div>
+        <div className="credit-counter-container">{credits}</div>
+      </div>
       <table>
         <tbody>
           {formValues.map((row, i) => {

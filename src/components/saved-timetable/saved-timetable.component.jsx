@@ -1,8 +1,7 @@
-import "./timetable.styles.scss";
+import "./saved-timetable.styles.scss";
 import CoursesTable from "../courses-table/courses-table.component";
-import SaveTimetable from "../save-timetable/save-timetable.component";
 
-const TimeTable = ({ slots, config, index }) => {
+const SavedTimeTable = ({ slots, config, index }) => {
   const days = ["MON", "TUE", "WED", "THU", "FRI"];
 
   return (
@@ -157,12 +156,9 @@ const TimeTable = ({ slots, config, index }) => {
           </tbody>
         </table>
       </div>
-      <div className="save-timetable-conatiner">
-        <SaveTimetable config={config} />
-      </div>
       <CoursesTable config={config} />
     </div>
   );
 };
 
-export default TimeTable;
+export default SavedTimeTable;

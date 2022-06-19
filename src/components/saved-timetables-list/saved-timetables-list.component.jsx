@@ -1,11 +1,11 @@
-import TimeTable from "../timetable/timetable.component";
+import SavedTimeTable from "../saved-timetable/saved-timetable.component";
 import { Fragment, useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import "./timetable-list.styles.scss";
+import "./saved-timetables-list.styles.scss";
 import { faCaretRight, faCaretLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const TimeTableList = ({ allConfigs }) => {
+const SavedTimetableList = ({ allConfigs }) => {
   const convertToSlots = (config) => {
     let slots = [
       [
@@ -379,10 +379,9 @@ const TimeTableList = ({ allConfigs }) => {
   if (allConfigs.length > 0) {
     return (
       <Fragment>
-        <div className="timetable-counter-container">
-          {currentTimetable}
-          &nbsp; of &nbsp;{allConfigs.length}
-        </div>
+        <h1 className="timetable-name">
+          {allConfigs[currentTimetable - 1].name}
+        </h1>
         <div className="custom-carousel-container">
           <button
             onClick={() => setIsDecrease(true)}
@@ -390,10 +389,10 @@ const TimeTableList = ({ allConfigs }) => {
           >
             <FontAwesomeIcon icon={faCaretLeft} color="white" />
           </button>
-          <TimeTable
-            slots={convertToSlots(allConfigs[currentTimetable - 1])}
+          <SavedTimeTable
+            slots={convertToSlots(allConfigs[currentTimetable - 1].timeTable)}
             key={currentTimetable}
-            config={allConfigs[currentTimetable - 1]}
+            config={allConfigs[currentTimetable - 1].timeTable}
             index={currentTimetable - 1}
           />
           <button
@@ -410,4 +409,4 @@ const TimeTableList = ({ allConfigs }) => {
   }
 };
 
-export default TimeTableList;
+export default SavedTimetableList;

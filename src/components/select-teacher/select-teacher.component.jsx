@@ -15,15 +15,6 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
         border: "1px solid rgb(49, 54, 60)",
       },
     }),
-    option: (styles) => ({
-      ...styles,
-      backgroundColor: "rgb(15, 17, 22)",
-      color: "white",
-      ":hover": {
-        backgroundColor: "rgb(49, 54, 60)",
-        color: "white",
-      },
-    }),
     menu: (provided) => ({
       ...provided,
       backgroundColor: "rgb(15, 17, 22)",
@@ -48,6 +39,8 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
         colors: {
           ...theme.colors,
           neutral80: "white",
+          primary25: "rgb(49, 54, 60)",
+          primary: "orange",
         },
       })}
     />

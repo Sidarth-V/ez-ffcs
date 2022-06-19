@@ -1,3 +1,47 @@
 table {
   width: 100%;
 }
+
+.header-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 35px;
+  padding-right: 35px;
+  color: white;
+
+  .lab-project-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 10%;
+  }
+
+  .credit-counter-container {
+    color: #f11a62;
+    background-color: #e91e624e;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #e91e63;
+    font-size: 1.5rem;
+  }
+
+  .lab-counter-container {
+    color: #272ab0;
+    background-color: #2729b064;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #272ab0;
+    font-size: 1.5rem;
+  }
+
+  .project-counter-container {
+    color: #9c27b0;
+    background-color: #9b27b045;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #9c27b0;
+    font-size: 1.5rem;
+  }
+}
