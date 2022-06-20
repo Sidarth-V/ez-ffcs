@@ -13,7 +13,7 @@ const NavItem = ({ data }) => {
       })}
     >
       <FontAwesomeIcon icon={data.icon} size="xs" className="icon" />
-      {data.text}
+      <span>{data.text}</span>
     </NavLink>
   );
 };

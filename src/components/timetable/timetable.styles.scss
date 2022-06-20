@@ -1,21 +1,20 @@
 .time-table-container {
-  padding-top: 50px;
-  padding: 5px;
-
-  .save-timetable-conatiner {
-    padding-top: 15px;
-    padding-bottom: 20px;
-    display: flex;
-    justify-content: center;
-  }
+  width: 100%;
+  font-size: 0.8vmax;
 }
 
 .table {
-  th,
-  td {
-    padding: 10px;
-    text-align: center;
-    border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  table {
+    margin: 0px;
+    th,
+    td {
+      width: 5vmax;
+      height: 5vmax;
+      text-align: center;
+      border-radius: 4px;
+    }
   }
 }
 

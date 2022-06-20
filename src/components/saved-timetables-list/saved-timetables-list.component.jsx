@@ -1,9 +1,11 @@
-import SavedTimeTable from "../saved-timetable/saved-timetable.component";
+import TimeTable from "../timetable/timetable.component";
 import { Fragment, useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import "./saved-timetables-list.styles.scss";
 import { faCaretRight, faCaretLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CoursesTable from "../courses-table/courses-table.component";
+import DeleteTimetable from "../delete-timetable/delete-timetable.component";
 
 const SavedTimetableList = ({ allConfigs }) => {
   const convertToSlots = (config) => {
@@ -301,10 +303,10 @@ const SavedTimetableList = ({ allConfigs }) => {
     ];
     let colors = [
       "E91E63",
-      "60C689",
+      "E9594c",
       "272AB0",
       "9C27B0",
-      "57DCBE",
+      "24A993",
       "5727B0",
       "276BB0",
       "57ACDC",
@@ -382,6 +384,7 @@ const SavedTimetableList = ({ allConfigs }) => {
         <h1 className="timetable-name">
           {allConfigs[currentTimetable - 1].name}
         </h1>
+
         <div className="custom-carousel-container">
           <button
             onClick={() => setIsDecrease(true)}
@@ -389,7 +392,7 @@ const SavedTimetableList = ({ allConfigs }) => {
           >
             <FontAwesomeIcon icon={faCaretLeft} color="white" />
           </button>
-          <SavedTimeTable
+          <TimeTable
             slots={convertToSlots(allConfigs[currentTimetable - 1].timeTable)}
             key={currentTimetable}
             config={allConfigs[currentTimetable - 1].timeTable}
@@ -402,6 +405,10 @@ const SavedTimetableList = ({ allConfigs }) => {
             <FontAwesomeIcon icon={faCaretRight} color="white" />
           </button>
         </div>
+        <div className="delete-timetable-container">
+          <DeleteTimetable />
+        </div>
+        <CoursesTable config={allConfigs[currentTimetable - 1].timeTable} />
       </Fragment>
     );
   } else {

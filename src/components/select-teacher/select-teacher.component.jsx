@@ -4,12 +4,14 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
   const customStyles = {
     control: (base) => ({
       ...base,
-      height: 52,
-      width: 200,
+      height: "6vh",
+      width: "15vw",
+      fontSize: "0.8vmax",
       background: "rgb(15, 17, 22)",
       color: "white",
       boxShadow: "none",
       border: "1px solid rgb(49, 54, 60)",
+      cursor: "pointer",
       ":hover": {
         boxShadow: "none",
         border: "1px solid rgb(49, 54, 60)",
@@ -20,9 +22,10 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
       backgroundColor: "rgb(15, 17, 22)",
       color: "white",
     }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: "white",
+    option: (styles) => ({
+      ...styles,
+      cursor: "pointer",
+      fontSize: "0.8vmax",
     }),
   };
   return (
@@ -32,7 +35,7 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
       isClearable={true}
       isSearchable={true}
       styles={customStyles}
-      placeholder={"select teacher ;)"}
+      placeholder={"select teacher"}
       isDisabled={isDisabled}
       theme={(theme) => ({
         ...theme,

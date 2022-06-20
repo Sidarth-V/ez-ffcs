@@ -1,6 +1,7 @@
 import SavedTimetableList from "../../components/saved-timetables-list/saved-timetables-list.component";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import "./view-saved.styles.scss";
 
 const ViewSaved = () => {
   const [allConfigs, setAllConfigs] = useState([]);
@@ -13,7 +14,7 @@ const ViewSaved = () => {
   }, []);
 
   return (
-    <div>
+    <div className="view-saved-container">
       <SavedTimetableList allConfigs={allConfigs} />
     </div>
   );

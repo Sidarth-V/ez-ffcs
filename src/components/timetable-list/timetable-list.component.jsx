@@ -4,6 +4,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 import "./timetable-list.styles.scss";
 import { faCaretRight, faCaretLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import CoursesTable from "../courses-table/courses-table.component";
+import SaveTimetable from "../save-timetable/save-timetable.component";
 
 const TimeTableList = ({ allConfigs }) => {
   const convertToSlots = (config) => {
@@ -301,10 +303,10 @@ const TimeTableList = ({ allConfigs }) => {
     ];
     let colors = [
       "E91E63",
-      "60C689",
+      "E9594c",
       "272AB0",
       "9C27B0",
-      "57DCBE",
+      "24A993",
       "5727B0",
       "276BB0",
       "57ACDC",
@@ -403,6 +405,10 @@ const TimeTableList = ({ allConfigs }) => {
             <FontAwesomeIcon icon={faCaretRight} color="white" />
           </button>
         </div>
+        <div className="save-timetable-conatiner">
+          <SaveTimetable config={allConfigs[currentTimetable - 1]} />
+        </div>
+        <CoursesTable config={allConfigs[currentTimetable - 1]} />
       </Fragment>
     );
   } else {
