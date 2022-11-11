@@ -1,11 +1,12 @@
 import Select from "react-select";
 
-const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
+const SelectSlot = ({ slots, onSlotChangeHandler, isDisabled }) => {
+  
   const customStyles = {
     control: (base) => ({
       ...base,
       height: "5vh",
-      width: "17vw",
+      width: "10vw",
       fontSize: "0.7vmax",
       background: "rgb(15, 17, 22)",
       color: "white",
@@ -30,13 +31,13 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
   };
   return (
     <Select
-      options={allCourses}
-      onChange={onCourseCodeChangeHandler}
+      options={slots}
+      onChange={onSlotChangeHandler}
       isClearable={true}
       isSearchable={true}
-      defaultValue={""}
       styles={customStyles}
-      placeholder={"course code"}
+      placeholder={"select slot"}
+      isDisabled={isDisabled}
       theme={(theme) => ({
         ...theme,
         colors: {
@@ -50,4 +51,4 @@ const SelectCourses = ({ allCourses, onCourseCodeChangeHandler }) => {
   );
 };
 
-export default SelectCourses;
+export default SelectSlot;

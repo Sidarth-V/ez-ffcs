@@ -6,20 +6,20 @@ import "./make-table-form.styles.scss";
 const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
   const [formValues, setFormValues] = useState([
     [
-      { courseCode: "", teacher: "" },
-      { courseCode: "", teacher: "" },
+      { courseCode: "", teacher: "", slot: "" },
+      { courseCode: "", teacher: "", slot: "" },
     ],
     [
-      { courseCode: "", teacher: "" },
-      { courseCode: "", teacher: "" },
+      { courseCode: "", teacher: "", slot: "" },
+      { courseCode: "", teacher: "", slot: "" },
     ],
     [
-      { courseCode: "", teacher: "" },
-      { courseCode: "", teacher: "" },
+      { courseCode: "", teacher: "", slot: "" },
+      { courseCode: "", teacher: "", slot: "" },
     ],
     [
-      { courseCode: "", teacher: "" },
-      { courseCode: "", teacher: "" },
+      { courseCode: "", teacher: "", slot: "" },
+      { courseCode: "", teacher: "", slot: "" },
     ],
   ]);
   const [courseOptions, setCourseOptions] = useState([]);
@@ -52,6 +52,19 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
       setFormValues(newFormValues);
     } else {
       newFormValues[i][j].teacher = "";
+      setFormValues(newFormValues);
+    }
+  };
+
+  const handleSlotChange = (e, i, j) => {
+    console.log("here")
+    let newFormValues = [...formValues];
+    if (e) {
+      
+      newFormValues[i][j].slot = e.value;
+      setFormValues(newFormValues);
+    } else {
+      newFormValues[i][j].slot = "";
       setFormValues(newFormValues);
     }
   };
@@ -138,7 +151,11 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
                         handleTeacherChange={(event) =>
                           handleTeacherChange(event, i, j)
                         }
+                        handleSlotChange={(event) =>
+                          handleSlotChange(event, i, j)
+                        }
                         courseCode={element.courseCode}
+                        empName={element.teacher}
                       />
                     </td>
                   );
