@@ -37,6 +37,7 @@ const MakeTimeTable = () => {
   }, []);
 
   const makeTimetables = (courses) => {
+    console.log(courses)
     const id = toast.loading("Please wait...", { theme: "dark" });
     axios
       .post(`${process.env.REACT_APP_BACKEND_URL}all-timetables`, { courses })
