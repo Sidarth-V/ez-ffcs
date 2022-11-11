@@ -4,6 +4,7 @@ import Sidebar from "./components/sidebar/sidebar.component";
 import MakeTimeTable from "./routes/make-tt/make-tt.pages";
 import Home from "./routes/home/home.pages";
 import ViewTeachers from "./routes/view-teachers/view-teachers.pages";
+import ViewTeachersOld from "./routes/view-teachers-old/view-teachers.pages";
 import ViewSaved from "./routes/view-saved/view-saved.pages";
 
 const App = () => {
@@ -13,6 +14,7 @@ const App = () => {
         <Route index element={<Home />} />
         <Route path="make-tt" element={<MakeTimeTable />} />
         <Route path="view-teachers" element={<ViewTeachers />} />
+        <Route path="view-teachers-old" element={<ViewTeachersOld />} />
         <Route path="view-saved" element={<ViewSaved />} />
       </Route>
     </Routes>

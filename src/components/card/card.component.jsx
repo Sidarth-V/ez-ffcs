@@ -3,7 +3,7 @@ import "./card.styles.scss";
 import Modal from "../modal/modal.component";
 
 const Card = ({ teacher, onFeedbackChange }) => {
-  const { empId, empName, courseCode, rating, feedback, _id } = teacher;
+  const { empName, courseCode, rating, feedback, _id } = teacher;
   let className;
   switch (rating) {
     case 1:
@@ -39,7 +39,7 @@ const Card = ({ teacher, onFeedbackChange }) => {
   return (
     <div className="card-container">
       <img
-        src={`https://avatars.dicebear.com/api/adventurer/${empId}.svg?background=%232a222936`}
+        src={`https://avatars.dicebear.com/api/adventurer/${empName}.svg?background=%232a222936`}
         alt="rover"
       />
       <div className="flex-container">

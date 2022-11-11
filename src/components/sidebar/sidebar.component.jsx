@@ -30,11 +30,17 @@ const listSidebar = [
     icon: faChalkboardTeacher,
   },
   {
-    id: "4",
+    id: "5",
     to: "/view-saved",
     text: "View Saved",
     icon: faSave,
   },
+  {
+    id: "4",
+    to: "/view-teachers-old",
+    text: "Last Sem",
+    icon: faChalkboardTeacher,
+  }
 ];
 
 const Sidebar = () => {
