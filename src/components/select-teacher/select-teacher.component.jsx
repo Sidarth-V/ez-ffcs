@@ -5,8 +5,8 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
     control: (base) => ({
       ...base,
       height: "5vh",
-      width: "10vw",
-      fontSize: "0.7vmax",
+      width: "11vw",
+      fontSize: "0.8vmax",
       background: "rgb(15, 17, 22)",
       color: "white",
       boxShadow: "none",
@@ -25,7 +25,7 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
     option: (styles) => ({
       ...styles,
       cursor: "pointer",
-      fontSize: "0.7vmax",
+      fontSize: "0.8vmax",
     }),
   };
   return (

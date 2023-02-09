@@ -1,0 +1,27 @@
+.topbar {
+  width: 100%;
+  background-color: rgb(15, 17, 22);
+  display: flex;
+  justify-content: space-between;
+
+  .logo-container {
+    color: white;
+    align-items: center;
+    padding: 1% 2%;
+  
+    span {
+      font-size: 1.7vmax;
+      font-weight: bold;
+    }
+  
+    .logo {
+      color: orange;
+    }
+  }
+
+  .get-database {
+    color: white;
+    padding: 1% 2%;
+  }
+}
+

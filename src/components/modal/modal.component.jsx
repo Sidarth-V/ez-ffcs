@@ -19,23 +19,7 @@ const Modal = ({
   id,
 }) => {
   const onFormSumbit = (e) => {
-    const toastId = toast.loading("Please wait...", { theme: "dark" });
     e.preventDefault();
-    axios
-      .post(`${process.env.REACT_APP_BACKEND_URL}update-feedback`, {
-        id: id,
-        feedback: e.target.feedback.value,
-        rating: e.target.rating.value,
-      })
-      .then((response) => {
-        toast.update(toastId, {
-          render: `Updated ${response.data.data.empName}`,
-          type: "success",
-          isLoading: false,
-          autoClose: 2000,
-        });
-        onFeedbackChange();
-      });
     handleCloseModal();
   };
 
