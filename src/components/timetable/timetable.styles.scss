@@ -1,17 +1,18 @@
 .time-table-container {
   width: 100%;
+  height: 100%;
   font-size: 0.8vmax;
 }
 
 .table {
-  display: flex;
-  justify-content: center;
+    height: 100%;
   table {
+    height: 100%;
     margin: 0px;
     th,
     td {
-      width: 5vmax;
-      height: 5vmax;
+      width: calc(100% / 15);
+      height: calc(100% / 7);
       text-align: center;
       border-radius: 4px;
     }

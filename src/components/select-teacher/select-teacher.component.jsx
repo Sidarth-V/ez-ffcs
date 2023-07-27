@@ -4,13 +4,13 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
   const customStyles = {
     control: (base) => ({
       ...base,
-      height: "6vh",
-      width: "15vw",
-      fontSize: "0.8vmax",
+      height: "5vh",
+      width: "10vw",
+      fontSize: "0.7vmax",
       background: "rgb(15, 17, 22)",
       color: "white",
       boxShadow: "none",
-      border: "1px solid rgb(49, 54, 60)",
+      border: "0.5px solid rgb(49, 54, 60)",
       cursor: "pointer",
       ":hover": {
         boxShadow: "none",
@@ -25,7 +25,7 @@ const SelectTeacher = ({ allTeachers, onTeacherChangeHandler, isDisabled }) => {
     option: (styles) => ({
       ...styles,
       cursor: "pointer",
-      fontSize: "0.8vmax",
+      fontSize: "0.7vmax",
     }),
   };
   return (

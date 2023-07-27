@@ -24,20 +24,41 @@ const MakeTimeTable = () => {
       });
       setAllConfigs(JSON.parse(localStorage.getItem("timetables")).timetables);
     }
+    let spreadsheetId = "1aTgWUGRgZosDA7e908AdpSlZPFMWbjep9fExgl_dQ1o";
+    let sheetName = "Sheet1";
+    let apiKey = "AIzaSyAw8BP_ykjUBFQgPbUXoTrnyvMrPPn7jIw";
     axios
       .get(`${process.env.REACT_APP_BACKEND_URL}view-teachers`)
       .then((response) => {
         setTeachers(response.data.data.teachers);
       });
     axios
-      .get(`${process.env.REACT_APP_BACKEND_URL}view-courses`)
+      .get(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?alt=json&key=${apiKey}`
+      )
       .then((response) => {
-        setAllCourses(response.data.data.courses);
+        const result = response.data;
+        console.log(result)
+        const rows = [];
+
+        const rawRows = result.values || [];
+        const headers = rawRows.shift();
+
+        rawRows.forEach((row) => {
+          const rowData = {};
+          row.forEach((item, index) => {
+            rowData[headers[index]] = item;
+          });
+          rows.push(rowData);
+        });
+        console.log(rows)
+
+        setAllCourses(rows);
       });
   }, []);
 
   const makeTimetables = (courses) => {
-    console.log(courses)
+    console.log(courses);
     const id = toast.loading("Please wait...", { theme: "dark" });
     axios
       .post(`${process.env.REACT_APP_BACKEND_URL}all-timetables`, { courses })
