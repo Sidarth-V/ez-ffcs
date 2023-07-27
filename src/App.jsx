@@ -7,7 +7,7 @@ const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Sidebar />}>
-        <Route path="make-tt" element={<MakeTimeTable />} />
+        <Route index element={<MakeTimeTable />} />
       </Route>
     </Routes>
   );
