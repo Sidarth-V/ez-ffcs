@@ -1,16 +1,15 @@
-import "./App.scss";
-import { Route, Routes } from "react-router-dom";
-import Sidebar from "./components/sidebar/sidebar.component";
-import MakeTimeTable from "./pages/make-tt/make-tt.pages";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import GenerateTimetables from "./pages/GenerateTimetables/pages.generateTimetables";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <GenerateTimetables />,
+  },
+]);
 
 const App = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Sidebar />}>
-        <Route index element={<MakeTimeTable />} />
-      </Route>
-    </Routes>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;
