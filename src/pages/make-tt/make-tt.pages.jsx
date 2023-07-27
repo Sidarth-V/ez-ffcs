@@ -26,7 +26,7 @@ const MakeTimeTable = () => {
     }
     let spreadsheetId = "1aTgWUGRgZosDA7e908AdpSlZPFMWbjep9fExgl_dQ1o";
     let sheetName = "Sheet1";
-    let apiKey = "AIzaSyAw8BP_ykjUBFQgPbUXoTrnyvMrPPn7jIw";
+    let apiKey = process.env.REACT_APP_SHEETS_API_KEY;
     axios
       .get(`${process.env.REACT_APP_BACKEND_URL}view-teachers`)
       .then((response) => {
