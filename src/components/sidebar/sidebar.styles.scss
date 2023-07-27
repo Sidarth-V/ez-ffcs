@@ -27,12 +27,12 @@
 
   .sidebar {
     background-color: rgb(15, 17, 22);
-    width: 17vw;
+    // width: 17vw;
     height: 100%;
   }
 
   .content {
-    width: 82vw;
+    width: 100vw;
     overflow-y: scroll;
   }
 }

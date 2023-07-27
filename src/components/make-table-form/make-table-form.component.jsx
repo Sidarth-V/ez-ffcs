@@ -17,10 +17,10 @@ const MakeTableForm = ({ allCourses, allTeachers, makeTimetablesHandler }) => {
       { courseCode: "", teacher: "", slot: "" },
       { courseCode: "", teacher: "", slot: "" },
     ],
-    [
-      { courseCode: "", teacher: "", slot: "" },
-      { courseCode: "", teacher: "", slot: "" },
-    ],
+    // [
+    //   { courseCode: "", teacher: "", slot: "" },
+    //   { courseCode: "", teacher: "", slot: "" },
+    // ],
   ]);
   const [courseOptions, setCourseOptions] = useState([]);
 
