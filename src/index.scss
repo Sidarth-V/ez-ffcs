@@ -1,37 +1,23 @@
+html {
+  height: 100%;
+  width: 100%;
+}
+
 body {
   margin: 0;
+  height: 100%;
+  width: 100%;
   background-color: rgb(3, 4, 8);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  ::-webkit-scrollbar {
-    background-color: transparent;
-    width: 0.3rem;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-  ::-webkit-scrollbar-track:hover {
-    background-color: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: #363636;
-    border-radius: 16px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #a0a0a5;
-  }
-  ::-webkit-scrollbar-button {
-    display: none;
+
+  #root {
+    height: 100%;
+    width: 100%;
   }
 }
 
 * {
   box-sizing: border-box;
-  &:focus {
-    outline: none;
-    box-shadow: none;
-  }
-  font-family:Verdana, Geneva, Tahoma, sans-serif
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 a {

@@ -1,12 +1,12 @@
-import MakeTableForm from "../../components/make-table-form/make-table-form.component";
-import TimeTableList from "../../components/timetable-list/timetable-list.component";
-import { useState, useEffect } from "react";
 import axios from "axios";
-import "./make-tt.styles.scss";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MakeTableForm from "../../components/make-table-form/make-table-form.component";
+import TimeTableList from "../../components/timetable-list/timetable-list.component";
+import "./styles.generateTimetables.scss";
 
-const MakeTimeTable = () => {
+const GenerateTimetables = () => {
   const [allCourses, setAllCourses] = useState([]);
   const [allConfigs, setAllConfigs] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -38,7 +38,7 @@ const MakeTimeTable = () => {
       )
       .then((response) => {
         const result = response.data;
-        console.log(result)
+        console.log(result);
         const rows = [];
 
         const rawRows = result.values || [];
@@ -51,7 +51,7 @@ const MakeTimeTable = () => {
           });
           rows.push(rowData);
         });
-        console.log(rows)
+        console.log(rows);
 
         setAllCourses(rows);
       });
@@ -105,7 +105,7 @@ const MakeTimeTable = () => {
   };
 
   return (
-    <div className="make-tt-container">
+    <div className="page-container">
       <MakeTableForm
         allCourses={allCourses}
         allTeachers={teachers}
@@ -116,4 +116,4 @@ const MakeTimeTable = () => {
   );
 };
 
-export default MakeTimeTable;
+export default GenerateTimetables;
