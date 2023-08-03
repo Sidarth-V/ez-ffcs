@@ -1,10 +1,10 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import SelectCourses from "../select-courses/select-courses.component";
 import SelectSlot from "../select-slot/select-slot.component";
 import SelectTeacher from "../select-teacher/select-teacher.component";
 
 import "./dropdown-group.styles.scss";
+import { getSlotsForCourse, getTeachersForCourse } from "../../api/api.main";
 
 const DropdownGroup = ({
   allCourses,
@@ -39,37 +39,22 @@ const DropdownGroup = ({
 
   useEffect(() => {
     if (courseCode.length > 1) {
-      axios
-        .post(`${process.env.REACT_APP_BACKEND_URL}view-teachers`, {
-          courseCode: courseCode,
-        })
-        .then((response) => {
-          setFilteredTeachers(response.data.data.teachers);
-        });
+      let teachersForCourse = getTeachersForCourse(courseCode);
+      setFilteredTeachers(teachersForCourse);
     }
   }, [courseCode, isDisabled]);
 
   useEffect(() => {
-    let temp = []
-    axios
-      .post(`${process.env.REACT_APP_BACKEND_URL}view-slots`, {
-        courseCode: courseCode,
-        empName: empName,
-      })
-      .then((response) => {
-        temp = response.data.data.slots;
-        let slots = temp.map((slot) => {
-          return {
-            value: slot,
-            label: slot,
-          };
-        });
-        setSlotsForTeacher(slots);
-      });
-  
-      
+    let temp = [];
+    temp = getSlotsForCourse(courseCode, empName);
+    let slots = temp.map((slot) => {
+      return {
+        value: slot,
+        label: slot,
+      };
+    });
+    setSlotsForTeacher(slots);
   }, [isSlotDisabled, courseCode, empName]);
-
 
   return (
     <div className="subject">

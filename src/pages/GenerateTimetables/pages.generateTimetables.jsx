@@ -5,11 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import MakeTableForm from "../../components/make-table-form/make-table-form.component";
 import TimeTableList from "../../components/timetable-list/timetable-list.component";
 import "./styles.generateTimetables.scss";
+import { getAllCourses } from "../../api/api.main";
 
 const GenerateTimetables = () => {
   const [allCourses, setAllCourses] = useState([]);
   const [allConfigs, setAllConfigs] = useState([]);
-  const [teachers, setTeachers] = useState([]);
 
   const customId = "custom-id-yes";
 
@@ -24,41 +24,11 @@ const GenerateTimetables = () => {
       });
       setAllConfigs(JSON.parse(localStorage.getItem("timetables")).timetables);
     }
-    let spreadsheetId = "1aTgWUGRgZosDA7e908AdpSlZPFMWbjep9fExgl_dQ1o";
-    let sheetName = "Sheet1";
-    let apiKey = process.env.REACT_APP_SHEETS_API_KEY;
-    axios
-      .get(`${process.env.REACT_APP_BACKEND_URL}view-teachers`)
-      .then((response) => {
-        setTeachers(response.data.data.teachers);
-      });
-    axios
-      .get(
-        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?alt=json&key=${apiKey}`
-      )
-      .then((response) => {
-        const result = response.data;
-        console.log(result);
-        const rows = [];
-
-        const rawRows = result.values || [];
-        const headers = rawRows.shift();
-
-        rawRows.forEach((row) => {
-          const rowData = {};
-          row.forEach((item, index) => {
-            rowData[headers[index]] = item;
-          });
-          rows.push(rowData);
-        });
-        console.log(rows);
-
-        setAllCourses(rows);
-      });
+    let temp = getAllCourses();
+    setAllCourses(temp);
   }, []);
 
   const makeTimetables = (courses) => {
-    console.log(courses);
     const id = toast.loading("Please wait...", { theme: "dark" });
     axios
       .post(`${process.env.REACT_APP_BACKEND_URL}all-timetables`, { courses })
@@ -108,7 +78,6 @@ const GenerateTimetables = () => {
     <div className="page-container">
       <MakeTableForm
         allCourses={allCourses}
-        allTeachers={teachers}
         makeTimetablesHandler={makeTimetables}
       />
       <TimeTableList allConfigs={allConfigs} length={allConfigs.length} />
