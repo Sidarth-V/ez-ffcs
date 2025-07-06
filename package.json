@@ -1,53 +1,28 @@
 {
-  "name": "ez-ffcs",
-  "version": "0.1.0",
-  "private": false,
-  "license": "MIT",
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.1.1",
-    "@fortawesome/free-solid-svg-icons": "^6.1.1",
-    "@fortawesome/react-fontawesome": "^0.1.18",
-    "axios": "^0.27.2",
-    "react": "^18.1.0",
-    "react-dom": "^18.1.0",
-    "react-hotkeys-hook": "^3.4.6",
-    "react-modal": "^3.15.1",
-    "react-router-dom": "6",
-    "react-select": "^5.3.2",
-    "react-toastify": "^9.0.4",
-    "sass": "^1.52.2"
-  },
+  "name": "material-ui-vite",
+  "version": "7.0.0",
+  "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "@emotion/react": "latest",
+    "@emotion/styled": "latest",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "latest",
+    "@mui/x-charts": "^8.7.0",
+    "@mui/x-data-grid": "^8.7.0",
+    "@mui/x-date-pickers": "^8.7.0",
+    "@mui/x-tree-view": "^8.7.0",
+    "@react-spring/web": "^10.0.1",
+    "dayjs": "^1.11.13",
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "prettier": "^3.0.0",
-    "react-scripts": "^5.0.1",
-    "web-vitals": "^2.1.4"
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest"
   }
 }
