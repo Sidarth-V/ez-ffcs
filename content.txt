@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Copilot: Under the Hood</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg: #0a0a0f;
+  --bg-card: #111118;
+  --bg-elevated: #16161f;
+  --border: rgba(255,255,255,0.07);
+  --border-bright: rgba(255,255,255,0.15);
+  --text: #e8e8f0;
+  --text-muted: #6e6e8a;
+  --text-dim: #3a3a55;
+  --accent: #5b5bd6;
+  --accent-bright: #7c7cf0;
+  --accent-glow: rgba(91,91,214,0.3);
+  --green: #3dd68c;
+  --orange: #f76b15;
+  --red: #f04461;
+  --yellow: #f5c518;
+  --teal: #2dd4bf;
+  --font: 'Geist', -apple-system, sans-serif;
+  --mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow: hidden;
+}
+
+/* ─── SLIDE CONTAINER ─── */
+#deck {
+  width: 100%; height: 100vh;
+  position: relative;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 64px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  transform: translateY(20px);
+  overflow: hidden;
+}
+.slide.active {
+  opacity: 1; pointer-events: all; transform: translateY(0);
+}
+.slide.exit {
+  opacity: 0; transform: translateY(-20px);
+}
+
+/* ─── NAV ─── */
+#nav {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(17,17,24,0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 20px;
+  z-index: 100;
+  font-size: 13px; color: var(--text-muted);
+}
+#nav button {
+  background: none; border: none; cursor: pointer;
+  color: var(--text); font-size: 18px; padding: 4px 8px;
+  border-radius: 6px; transition: background 0.15s;
+}
+#nav button:hover { background: var(--bg-elevated); }
+#slide-num { font-family: var(--mono); min-width: 48px; text-align: center; }
+
+/* ─── PROGRESS ─── */
+#progress {
+  position: fixed; top: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+  transition: width 0.4s ease;
+  z-index: 100;
+}
+
+/* ─── BACKGROUNDS ─── */
+.bg-grid::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.bg-radial::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(91,91,214,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.label {
+  font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.15em;
+  color: var(--accent-bright);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.title {
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 700; line-height: 1.05;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.subtitle {
+  font-size: clamp(16px, 2vw, 22px);
+  color: var(--text-muted); font-weight: 400;
+  line-height: 1.5; margin-top: 16px;
+  max-width: 640px; text-align: center;
+}
+.slide-title {
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 700; letter-spacing: -0.03em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.section-tag {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; color: var(--accent-bright);
+  text-transform: uppercase; margin-bottom: 16px;
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 28px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border-bright); }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(91,91,214,0.12);
+  border: 1px solid rgba(91,91,214,0.25);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 12px; font-family: var(--mono);
+  color: var(--accent-bright);
+}
+
+/* ─── CODE BLOCK ─── */
+.code-block {
+  background: #0d0d14;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  font-family: var(--mono);
+  font-size: 13px; line-height: 1.7;
+  color: #c9c9e8;
+  overflow-x: auto;
+}
+.code-block .kw { color: var(--accent-bright); }
+.code-block .str { color: var(--green); }
+.code-block .cmt { color: var(--text-dim); }
+.code-block .fn { color: var(--teal); }
+.code-block .num { color: var(--orange); }
+
+/* ─── COMPARISON TABLE ─── */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.compare-table th {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--text-muted); text-transform: uppercase;
+  padding: 8px 12px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.compare-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table .name-col { font-weight: 600; color: #fff; white-space: nowrap; }
+.tag-green { color: var(--green); font-family: var(--mono); font-size: 11px; }
+.tag-orange { color: var(--orange); font-family: var(--mono); font-size: 11px; }
+.tag-red { color: var(--red); font-family: var(--mono); font-size: 11px; }
+.tag-muted { color: var(--text-muted); font-family: var(--mono); font-size: 11px; }
+
+/* ─── LISTS ─── */
+.bullet-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.bullet-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 15px; line-height: 1.5; color: var(--text);
+}
+.bullet-list li::before {
+  content: '→';
+  color: var(--accent-bright);
+  font-family: var(--mono); font-size: 13px;
+  margin-top: 2px; flex-shrink: 0;
+}
+
+/* ─── STAT NUMBERS ─── */
+.stat { text-align: center; }
+.stat-num {
+  font-size: clamp(40px, 5vw, 80px);
+  font-weight: 700; letter-spacing: -0.04em;
+  font-family: var(--mono);
+  background: linear-gradient(135deg, var(--accent-bright), var(--teal));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* ─── WARNING BOX ─── */
+.warn-box {
+  background: rgba(240,68,97,0.06);
+  border: 1px solid rgba(240,68,97,0.2);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.warn-icon { color: var(--red); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── GRID LAYOUTS ─── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; width: 100%; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; width: 100%; }
+
+/* ─── SLIDE-SPECIFIC CONTENT ─── */
+.slide-inner {
+  width: 100%; max-width: 1100px;
+  display: flex; flex-direction: column;
+  align-items: flex-start;
+}
+.slide-inner.centered { align-items: center; text-align: center; }
+
+/* ─── DIVIDER ─── */
+.divider { width: 100%; height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ─── BADGE ─── */
+.badge {
+  display: inline-block;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px;
+}
+.badge-purple { background: rgba(91,91,214,0.15); color: var(--accent-bright); }
+.badge-green { background: rgba(61,214,140,0.12); color: var(--green); }
+.badge-red { background: rgba(240,68,97,0.12); color: var(--red); }
+.badge-orange { background: rgba(247,107,21,0.12); color: var(--orange); }
+.badge-teal { background: rgba(45,212,191,0.12); color: var(--teal); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes token-flow {
+  0% { transform: translateX(-120%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes data-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.anim-fadeup { animation: fadeUp 0.6s ease forwards; }
+.anim-float { animation: float 4s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="deck"></div>
+
+<div id="nav">
+  <button id="btn-prev">←</button>
+  <span id="slide-num">1 / 20</span>
+  <button id="btn-next">→</button>
+  <span style="color:var(--border-bright);margin:0 4px">|</span>
+  <span id="slide-title-nav" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--text-muted)"></span>
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// SLIDE DATA
+// ──────────────────────────────────────────────
+const slides = [
+
+// ── 0: TITLE ──────────────────────────────────
+{
+  title: "Title",
+  render: () => `
+  <div class="slide-inner centered bg-grid bg-radial" style="gap:0">
+    <div style="position:relative;margin-bottom:48px">
+      ${svgCopilotOrbit()}
+    </div>
+    <div class="label">Internal Dev Talk · 2025</div>
+    <h1 class="title" style="text-align:center;max-width:800px">GitHub Copilot<br>Under the Hood</h1>
+    <p class="subtitle">Context windows, token economics, agents, MCP, SDK & failure modes — the stuff the docs skip</p>
+    <div style="display:flex;gap:12px;margin-top:40px;flex-wrap:wrap;justify-content:center">
+      <span class="pill">VS Code</span>
+      <span class="pill">Copilot Chat</span>
+      <span class="pill">Agent Mode</span>
+      <span class="pill">Copilot CLI</span>
+      <span class="pill">SDK</span>
+      <span class="pill">MCP</span>
+    </div>
+  </div>`
+},
+
+// ── 1: AGENDA ─────────────────────────────────
+{
+  title: "Agenda",
+  render: () => `
+  <div class="slide-inner" style="gap:0">
+    <div class="section-tag">Overview</div>
+    <h2 class="slide-title">What we're covering</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:28px">~60 minutes · 12 sections</p>
+    <div class="grid-2" style="gap:12px">
+      ${[
+        ["01","Context & Prompts","How GHCP loads your code"],
+        ["02","Context Window","Limits, variance, compaction"],
+        ["03","Token Economy","Inputs, outputs, costs"],
+        ["04","Harness Comparison","GHCP vs Cursor vs Claude Code"],
+        ["05","GHCP Tooling","Agents, MCP, hooks, skills"],
+        ["06","Copilot CLI","Terminal superpowers"],
+        ["07","Copilot SDK","Beyond the plugin"],
+        ["08","GitLab MCP","Real workflow integration"],
+        ["09","IDE vs SDK","Side-by-side contrast"],
+        ["10","Models","GPT-5, Claude 4, Gemini 2.5"],
+        ["11","Failure Modes","What AI gets wrong"],
+        ["12","Summary","Key takeaways"],
+      ].map(([n,t,s])=>`
+        <div class="card" style="padding:14px 18px;display:flex;gap:14px;align-items:flex-start">
+          <span style="font-family:var(--mono);font-size:11px;color:var(--accent-bright);margin-top:2px;flex-shrink:0">${n}</span>
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px">${t}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${s}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`
+},
+
+// ── 2: SYSTEM PROMPT / INSTRUCTIONS / PROMPT ──
+{
+  title: "Context Anatomy",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 01 · Context & Prompts</div>
+    <h2 class="slide-title">System Prompt vs Instructions vs Prompt</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:28px">Three layers. Different timing, different scope, different cost.</p>
+    ${svgContextLayers()}
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card" style="border-color:rgba(91,91,214,0.3)">
+        <div class="badge badge-purple" style="margin-bottom:8px">System Prompt</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:13px">Set by Copilot / enterprise admin</li>
+          <li style="font-size:13px">Always injected, invisible to you</li>
+          <li style="font-size:13px">Defines model persona & safety rails</li>
+          <li style="font-size:13px">Billed on every single request</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(45,212,191,0.3)">
+        <div class="badge badge-teal" style="margin-bottom:8px">Instruction Files</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:13px"><code style="font-family:var(--mono);font-size:12px">.github/copilot-instructions.md</code></li>
+          <li style="font-size:13px">Loaded when chat opens or on tool invocation</li>
+          <li style="font-size:13px">Repo-scoped or workspace-scoped</li>
+          <li style="font-size:13px">Your team's coding standards live here</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(61,214,140,0.3)">
+        <div class="badge badge-green" style="margin-bottom:8px">User Prompt</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:13px">What you type in the chat box</li>
+          <li style="font-size:13px">Includes <code style="font-family:var(--mono);font-size:12px">#file</code>, <code style="font-family:var(--mono);font-size:12px">#selection</code>, <code style="font-family:var(--mono);font-size:12px">#codebase</code></li>
+          <li style="font-size:13px">Combined with implicit context (open tabs)</li>
+          <li style="font-size:13px">Assembled right before the API call</li>
+        </ul>
+      </div>
+    </div>
+  </div>`
+},
+
+// ── 3: CONTEXT WINDOW ─────────────────────────
+{
+  title: "Context Window",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 02 · Context Window</div>
+    <h2 class="slide-title">Why your context limit varies</h2>
+    <div class="grid-2" style="gap:24px;margin-top:4px">
+      <div>
+        ${svgContextMeter()}
+        <div class="card" style="margin-top:16px;border-color:rgba(247,107,21,0.25)">
+          <div class="badge badge-orange" style="margin-bottom:8px">When you exceed the limit</div>
+          <ul class="bullet-list" style="gap:6px">
+            <li style="font-size:13px">Oldest context is <strong>silently dropped</strong> — no warning</li>
+            <li style="font-size:13px">Copilot may lose your earlier instructions</li>
+            <li style="font-size:13px">Agent mode loops become dangerous here</li>
+            <li style="font-size:13px">The model doesn't know what it forgot</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;font-family:var(--mono)">WHY GHCP SHOWS DIFFERENT THAN THE MODEL</div>
+          <ul class="bullet-list" style="gap:8px">
+            <li style="font-size:13px">GHCP reserves headroom for its <em>own</em> system prompt</li>
+            <li style="font-size:13px">Instruction files consume tokens before you type</li>
+            <li style="font-size:13px">Implicit context (open tabs) is added automatically</li>
+            <li style="font-size:13px">Agent mode tool outputs fill the window fast</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;font-family:var(--mono)">CONTEXT BUDGETS BY MODEL</div>
+          <table style="width:100%;font-size:12px;border-collapse:collapse">
+            <tr>
+              <td style="padding:4px 0;color:var(--text)">GPT-4o</td>
+              <td style="padding:4px 0;text-align:right;font-family:var(--mono);color:var(--accent-bright)">128K</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;color:var(--text)">Claude Sonnet 4</td>
+              <td style="padding:4px 0;text-align:right;font-family:var(--mono);color:var(--accent-bright)">200K</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;color:var(--text)">Gemini 2.5 Pro</td>
+              <td style="padding:4px 0;text-align:right;font-family:var(--mono);color:var(--teal)">1M</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;color:var(--text-muted)">GHCP effective budget</td>
+              <td style="padding:4px 0;text-align:right;font-family:var(--mono);color:var(--text-muted)">~60-70% of above</td>
+            </tr>
+          </table>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;font-family:var(--mono)">WHAT IS COMPACTION?</div>
+          <p style="font-size:13px;line-height:1.6;color:var(--text)">When the window fills, some harnesses (Claude Code, Cursor) automatically <strong>summarise</strong> older turns into a compressed block, preserving intent without losing every token. GHCP currently truncates instead.</p>
+        </div>
+      </div>
+    </div>
+  </div>`
+},
+
+// ── 4: TOKEN ECONOMY ──────────────────────────
+{
+  title: "Token Economy",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 03 · Token Economy</div>
+    <h2 class="slide-title">Every token has a price tag</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">Understanding this is the difference between a $5/mo tool and a $500/mo surprise.</p>
+    ${svgTokenFlow()}
+    <div class="grid-4" style="margin-top:20px">
+      ${[
+        ["Input","What you send to the model","var(--accent-bright)","Prompt + context + instruction files"],
+        ["Output","What the model generates","var(--green)","Code, explanation, tool calls"],
+        ["Cache Write","First time a block is cached","var(--yellow)","~25% more than input — one-time cost"],
+        ["Cache Read","Hitting a cached block","var(--teal)","~10% of input — huge savings on repeat"],
+      ].map(([t,s,c,d])=>`
+        <div class="card" style="border-top:2px solid ${c};padding:16px">
+          <div style="font-family:var(--mono);font-size:11px;color:${c};margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">${t}</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">${s}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${d}</div>
+        </div>`).join('')}
+    </div>
+    <div class="warn-box" style="margin-top:16px">
+      <span class="warn-icon">⚠</span>
+      <div style="font-size:13px;line-height:1.6">
+        <strong>API costs vs seat cost:</strong> A GHCP seat is ~$19/mo flat. The same usage via API (e.g. building your own tool on Claude Sonnet 4) could be 5–50× more expensive depending on context size and agent loop depth. Harness choice directly determines your bill.
+      </div>
+    </div>
+  </div>`
+},
+
+// ── 5: HARNESS COMPARISON ─────────────────────
+{
+  title: "Harness Comparison",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1060px">
+    <div class="section-tag">Section 04 · Harness Comparison</div>
+    <h2 class="slide-title">How harness choice changes your token bill</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">Same task, wildly different costs. This is why harness selection matters.</p>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="compare-table" style="width:100%">
+        <thead>
+          <tr style="background:var(--bg-elevated)">
+            <th>Tool</th>
+            <th>Model(s)</th>
+            <th>Context Strategy</th>
+            <th>Compaction</th>
+            <th>Token Efficiency</th>
+            <th>Billing Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name-col">GitHub Copilot</td>
+            <td style="font-size:12px;color:var(--text-muted)">GPT-4o, o3, Claude Sonnet, Gemini</td>
+            <td style="font-size:12px">Open tabs + instruction files</td>
+            <td><span class="tag-red">Truncates</span></td>
+            <td><span class="tag-orange">Medium</span></td>
+            <td style="font-size:12px">Flat seat</td>
+          </tr>
+          <tr>
+            <td class="name-col">Cursor</td>
+            <td style="font-size:12px;color:var(--text-muted)">Claude Sonnet, GPT-4o, Gemini</td>
+            <td style="font-size:12px">Codebase index + embeddings</td>
+            <td><span class="tag-green">Summarises</span></td>
+            <td><span class="tag-green">High</span></td>
+            <td style="font-size:12px">Seat + usage over limit</td>
+          </tr>
+          <tr>
+            <td class="name-col">Claude Code</td>
+            <td style="font-size:12px;color:var(--text-muted)">Claude 4 Sonnet / Opus</td>
+            <td style="font-size:12px">Filesystem reads, tool calls</td>
+            <td><span class="tag-green">Auto-compacts</span></td>
+            <td><span class="tag-green">Very High (cache)</span></td>
+            <td style="font-size:12px">API usage only</td>
+          </tr>
+          <tr>
+            <td class="name-col">OpenAI Codex CLI</td>
+            <td style="font-size:12px;color:var(--text-muted)">o3, GPT-4.1</td>
+            <td style="font-size:12px">Sandbox + explicit files</td>
+            <td><span class="tag-muted">Manual</span></td>
+            <td><span class="tag-orange">Medium</span></td>
+            <td style="font-size:12px">API usage only</td>
+          </tr>
+          <tr>
+            <td class="name-col">OpenCode</td>
+            <td style="font-size:12px;color:var(--text-muted)">Any (router)</td>
+            <td style="font-size:12px">Configurable</td>
+            <td><span class="tag-orange">Partial</span></td>
+            <td><span class="tag-green">Configurable</span></td>
+            <td style="font-size:12px">API usage only</td>
+          </tr>
+          <tr>
+            <td class="name-col">Supermaven</td>
+            <td style="font-size:12px;color:var(--text-muted)">Custom (300K ctx)</td>
+            <td style="font-size:12px">Repo-wide token stream</td>
+            <td><span class="tag-green">Native 300K</span></td>
+            <td><span class="tag-green">Completion-focused</span></td>
+            <td style="font-size:12px">Seat</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:20px;align-items:center">
+      <div style="font-size:12px;color:var(--text-muted)">Token efficiency for a typical 30-turn refactor session, same codebase:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${[["GHCP","1.0×","tag-orange"],["Cursor","0.7×","tag-green"],["Claude Code","0.5×","tag-green"],["Codex","0.9×","tag-orange"]].map(([n,m,c])=>`
+          <div style="font-size:12px"><span class="badge badge-purple">${n}</span> <span class="${c}" style="font-family:var(--mono)">${m} tokens</span></div>`).join('')}
+      </div>
+    </div>
+  </div>`
+},
+
+// ── 6: GHCP TOOLING ───────────────────────────
+{
+  title: "GHCP Tooling Ecosystem",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 05 · Tooling</div>
+    <h2 class="slide-title">The GHCP extension ecosystem</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">Most teams use 10% of what's available.</p>
+    ${svgToolingMap()}
+    <div class="grid-3" style="margin-top:20px;gap:12px">
+      ${[
+        ["Custom Agents","badge-purple","Run multi-step tasks: read, write, test, iterate. Triggered from chat with <code style='font-family:var(--mono);font-size:11px'>@agent</code>"],
+        ["MCP Servers","badge-teal","Model Context Protocol — give the model access to tools: GitLab, Jira, Slack, DB queries"],
+        ["Prompt Files","badge-green","Reusable prompt templates in <code style='font-family:var(--mono);font-size:11px'>.github/prompts/</code>. Share with your team via Git"],
+        ["Instruction Files","badge-purple","Persistent context: coding standards, arch decisions, team conventions"],
+        ["Skills","badge-orange","Task-specific capabilities attached to agents. E.g. 'summarise PR' skill"],
+        ["Hooks & Workflows","badge-teal","Automate: on-save, on-commit, on-PR. Chain tools together"],
+      ].map(([t,b,d])=>`
+        <div class="card" style="padding:16px">
+          <div class="badge ${b}" style="margin-bottom:8px">${t}</div>
+          <p style="font-size:13px;line-height:1.6;color:var(--text)">${d}</p>
+        </div>`).join('')}
+    </div>
+  </div>`
+},
+
+// ── 7: COPILOT CLI ────────────────────────────
+{
+  title: "Copilot CLI",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:960px">
+    <div class="section-tag">Section 06 · CLI</div>
+    <h2 class="slide-title">Copilot in your terminal</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">The CLI is where Copilot stops being a suggestion tool and starts becoming an agent.</p>
+    <div class="grid-2" style="gap:20px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="code-block">
+<span class="cmt"># Natural language → shell command</span>
+$ <span class="fn">gh copilot suggest</span> <span class="str">"find all java files modified in last 7 days"</span>
+
+<span class="kw">Suggestion:</span>
+find . -name <span class="str">"*.java"</span> -mtime -7
+
+<span class="kw">?</span> What would you like to do?
+  ❯ Copy command to clipboard
+    Execute command
+    Revise command</div>
+        <div class="code-block">
+<span class="cmt"># Explain a cryptic command</span>
+$ <span class="fn">gh copilot explain</span> <span class="str">"awk 'NR%2==0' file.txt | sort -u"</span>
+
+<span class="kw">Explanation:</span>
+Prints every even-numbered line of file.txt,
+then sorts those lines and removes duplicates.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="badge badge-teal" style="margin-bottom:10px">Three core commands</div>
+          <ul class="bullet-list" style="gap:8px">
+            <li style="font-size:13px"><code style="font-family:var(--mono)">gh copilot suggest</code> — NL → command</li>
+            <li style="font-size:13px"><code style="font-family:var(--mono)">gh copilot explain</code> — decode any command</li>
+            <li style="font-size:13px"><code style="font-family:var(--mono)">gh copilot alias</code> — wrap as <code style="font-family:var(--mono)">?</code> shortcut</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="badge badge-purple" style="margin-bottom:10px">Why CLI takes it further</div>
+          <ul class="bullet-list" style="gap:8px">
+            <li style="font-size:13px">Runs in CI pipelines — no IDE needed</li>
+            <li style="font-size:13px">Composable with <code style="font-family:var(--mono)">xargs</code>, scripts, Makefiles</li>
+            <li style="font-size:13px">Scriptable loops: generate → test → fix</li>
+            <li style="font-size:13px">Git-aware: knows your branch & diff</li>
+          </ul>
+        </div>
+        <div class="warn-box">
+          <span class="warn-icon">💡</span>
+          <div style="font-size:13px">Set up <code style="font-family:var(--mono)">eval "$(gh copilot alias -- bash)"</code> in your <code style="font-family:var(--mono)">.bashrc</code> to use <code style="font-family:var(--mono)">??</code> as a natural-language shell shortcut.</div>
+        </div>
+      </div>
+    </div>
+  </div>`
+},
+
+// ── 8: COPILOT SDK ────────────────────────────
+{
+  title: "Copilot SDK",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 07 · Copilot SDK</div>
+    <h2 class="slide-title">Beyond the plugin</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">The SDK lets you build your own AI-powered tools on top of the same models — with full control over context, tools, and UX.</p>
+    <div class="grid-2" style="gap:20px">
+      <div class="card" style="border-color:rgba(91,91,214,0.3)">
+        <div class="badge badge-purple" style="margin-bottom:12px">What the SDK gives you</div>
+        <ul class="bullet-list" style="gap:8px">
+          <li style="font-size:13px">Call Copilot models programmatically (Node / Python)</li>
+          <li style="font-size:13px">Define custom tools the model can call</li>
+          <li style="font-size:13px">Build streaming chat UIs, CLI tools, webhooks</li>
+          <li style="font-size:13px">Access enterprise SSO + seat entitlements</li>
+          <li style="font-size:13px">Compose multi-agent pipelines</li>
+          <li style="font-size:13px">Integrate with your internal systems</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(45,212,191,0.3)">
+        <div class="badge badge-teal" style="margin-bottom:12px">Real capabilities unlocked</div>
+        <ul class="bullet-list" style="gap:8px">
+          <li style="font-size:13px">Automated code review bot on every PR</li>
+          <li style="font-size:13px">Release notes generator from GitLab milestones</li>
+          <li style="font-size:13px">Epic → subtask decomposer in GitLab</li>
+          <li style="font-size:13px">Test gap analyser across the whole repo</li>
+          <li style="font-size:13px">Architecture drift detector</li>
+          <li style="font-size:13px">Custom Slack bot with codebase context</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div class="code-block" style="font-size:12px">
+<span class="cmt">// Copilot SDK — minimal example (Node.js)</span>
+<span class="kw">import</span> { CopilotClient } <span class="kw">from</span> <span class="str">"@github-copilot/sdk"</span>;
+
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="fn">CopilotClient</span>({ token: process.env.<span class="num">COPILOT_TOKEN</span> });
+
+<span class="kw">const</span> stream = <span class="kw">await</span> client.chat.<span class="fn">stream</span>({
+  model: <span class="str">"gpt-4o"</span>,
+  messages: [{ role: <span class="str">"user"</span>, content: <span class="str">"Review this diff for security issues: "</span> + diff }],
+  tools: [<span class="fn">createGitLabCommentTool</span>()],   <span class="cmt">// custom tool</span>
+});
+
+<span class="kw">for await</span> (<span class="kw">const</span> chunk <span class="kw">of</span> stream) { process.stdout.<span class="fn">write</span>(chunk.text); }</div>
+    </div>
+  </div>`
+},
+
+// ── 9: GITLAB MCP ─────────────────────────────
+{
+  title: "GitLab MCP Server",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 08 · GitLab MCP</div>
+    <h2 class="slide-title">Copilot + GitLab = context-aware AI</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">The GitLab MCP server gives the model live access to your issues, epics, MRs, pipelines and code — without copy-pasting.</p>
+    ${svgMCPFlow()}
+    <div class="grid-3" style="margin-top:16px;gap:12px">
+      <div class="card">
+        <div class="badge badge-orange" style="margin-bottom:8px">Setup (3 steps)</div>
+        <ol style="list-style:none;display:flex;flex-direction:column;gap:6px">
+          <li style="font-size:12px;color:var(--text)"><span style="font-family:var(--mono);color:var(--orange)">1.</span> Add to <code style="font-family:var(--mono)">mcp.json</code> in VS Code settings</li>
+          <li style="font-size:12px;color:var(--text)"><span style="font-family:var(--mono);color:var(--orange)">2.</span> Provide GitLab PAT as env var</li>
+          <li style="font-size:12px;color:var(--text)"><span style="font-family:var(--mono);color:var(--orange)">3.</span> Enable in Copilot Chat settings</li>
+        </ol>
+        <div class="code-block" style="margin-top:10px;font-size:11px;padding:12px">
+<span class="cmt">// .vscode/mcp.json</span>
+{
+  <span class="str">"gitlab"</span>: {
+    <span class="str">"command"</span>: <span class="str">"npx"</span>,
+    <span class="str">"args"</span>: [<span class="str">"@gitlab/mcp-server"</span>],
+    <span class="str">"env"</span>: { <span class="str">"GITLAB_TOKEN"</span>: <span class="str">"..."</span> }
+  }
+}</div>
+      </div>
+      <div class="card">
+        <div class="badge badge-teal" style="margin-bottom:8px">What Copilot can now access</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:12px">Issues & epics by label, milestone, assignee</li>
+          <li style="font-size:12px">Merge request diffs & review comments</li>
+          <li style="font-size:12px">Pipeline status & job logs</li>
+          <li style="font-size:12px">Wiki & documentation pages</li>
+          <li style="font-size:12px">Release notes & milestones</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="badge badge-green" style="margin-bottom:8px">Power prompts</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:12px"><em>"Summarise all open bugs in epic #142"</em></li>
+          <li style="font-size:12px"><em>"What changed between v2.3 and v2.4?"</em></li>
+          <li style="font-size:12px"><em>"Why is pipeline #8841 failing?"</em></li>
+          <li style="font-size:12px"><em>"Draft MR description for this diff"</em></li>
+          <li style="font-size:12px"><em>"List all unreviewed MRs older than 3 days"</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>`
+},
+
+// ── 10: IDE vs SDK ────────────────────────────
+{
+  title: "IDE Plugin vs SDK",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1020px">
+    <div class="section-tag">Section 09 · IDE vs SDK</div>
+    <h2 class="slide-title">Plugin vs SDK — what actually changes</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">Same model. Completely different level of control.</p>
+    ${svgIDEvsSDK()}
+    <div class="grid-2" style="gap:16px;margin-top:16px">
+      <div class="card" style="border-color:rgba(255,255,255,0.1)">
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;font-family:var(--mono);letter-spacing:0.08em">IDE PLUGIN (what most do)</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:13px">Context = open tabs + selection</li>
+          <li style="font-size:13px">One conversation at a time</li>
+          <li style="font-size:13px">Tools limited to what Copilot exposes</li>
+          <li style="font-size:13px">No audit trail, no automation</li>
+          <li style="font-size:13px">Works only when IDE is open</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(91,91,214,0.35)">
+        <div style="font-size:13px;color:var(--accent-bright);margin-bottom:10px;font-family:var(--mono);letter-spacing:0.08em">SDK (what's possible)</div>
+        <ul class="bullet-list" style="gap:6px">
+          <li style="font-size:13px">Context = anything you feed it (full repo, DB, docs)</li>
+          <li style="font-size:13px">Parallel agents, concurrent tasks</li>
+          <li style="font-size:13px">Define any tool — GitLab, Slack, Kafka, REST</li>
+          <li style="font-size:13px">Full audit log, cost tracking, rate limiting</li>
+          <li style="font-size:13px">Runs headlessly in CI, cron, webhooks</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-box" style="margin-top:14px;background:rgba(91,91,214,0.06);border-color:rgba(91,91,214,0.2)">
+      <span style="color:var(--accent-bright);font-size:16px">💡</span>
+      <div style="font-size:13px;line-height:1.6"><strong>Demo concept:</strong> PR auto-reviewer — on every MR push to GitLab, an SDK agent reads the diff, checks against your coding standards (instruction file), posts inline comments, and adds labels. Zero human interaction. This cannot be built with the VS Code plugin alone.</div>
+    </div>
+  </div>`
+},
+
+// ── 11: MODELS ────────────────────────────────
+{
+  title: "Models Overview",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1000px">
+    <div class="section-tag">Section 10 · Models</div>
+    <h2 class="slide-title">Which model for which task?</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">GHCP surfaces multiple models — the right pick changes your speed, quality, and cost.</p>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="compare-table">
+        <thead>
+          <tr style="background:var(--bg-elevated)">
+            <th>Model</th>
+            <th>Best For</th>
+            <th>Context</th>
+            <th>Speed</th>
+            <th>Code Quality</th>
+            <th>In GHCP?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name-col">GPT-4o</td>
+            <td style="font-size:12px">Balanced chat + code</td>
+            <td style="font-family:var(--mono);font-size:12px">128K</td>
+            <td><span class="tag-green">Fast</span></td>
+            <td><span class="tag-green">★★★★</span></td>
+            <td><span class="tag-green">✓ Default</span></td>
+          </tr>
+          <tr>
+            <td class="name-col">o3 / o4-mini</td>
+            <td style="font-size:12px">Reasoning, hard problems</td>
+            <td style="font-family:var(--mono);font-size:12px">200K</td>
+            <td><span class="tag-orange">Slow</span></td>
+            <td><span class="tag-green">★★★★★</span></td>
+            <td><span class="tag-green">✓ Agent mode</span></td>
+          </tr>
+          <tr>
+            <td class="name-col">Claude Sonnet 4</td>
+            <td style="font-size:12px">Long-context refactors</td>
+            <td style="font-family:var(--mono);font-size:12px">200K</td>
+            <td><span class="tag-green">Fast</span></td>
+            <td><span class="tag-green">★★★★★</span></td>
+            <td><span class="tag-green">✓ Via model picker</span></td>
+          </tr>
+          <tr>
+            <td class="name-col">Claude Opus 4</td>
+            <td style="font-size:12px">Complex architecture, analysis</td>
+            <td style="font-family:var(--mono);font-size:12px">200K</td>
+            <td><span class="tag-red">Slowest</span></td>
+            <td><span class="tag-green">★★★★★</span></td>
+            <td><span class="tag-orange">Limited</span></td>
+          </tr>
+          <tr>
+            <td class="name-col">Gemini 2.5 Pro</td>
+            <td style="font-size:12px">Massive codebases, 1M ctx</td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--teal)">1M</td>
+            <td><span class="tag-orange">Medium</span></td>
+            <td><span class="tag-green">★★★★</span></td>
+            <td><span class="tag-green">✓ Via model picker</span></td>
+          </tr>
+          <tr>
+            <td class="name-col" style="color:var(--text-muted)">Claude Haiku 3.5</td>
+            <td style="font-size:12px;color:var(--text-muted)">Quick completions, autocomplete</td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">200K</td>
+            <td><span class="tag-green">Fastest</span></td>
+            <td><span class="tag-orange">★★★</span></td>
+            <td><span class="tag-muted">SDK only</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:14px;font-size:12px;color:var(--text-muted)">
+      <span>💡 Rule of thumb:</span>
+      <span style="color:var(--text)">Autocomplete → GPT-4o · Chat → Sonnet 4 · Deep reasoning → o3 · Whole-repo work → Gemini 2.5</span>
+    </div>
+  </div>`
+},
+
+// ── 12: FAILURE MODES ─────────────────────────
+{
+  title: "Failure Modes",
+  render: () => `
+  <div class="slide-inner" style="gap:0;max-width:1020px">
+    <div class="section-tag">Section 11 · Failure Modes</div>
+    <h2 class="slide-title" style="color:var(--red);-webkit-text-fill-color:unset;background:none">What AI coding gets wrong</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">This is why senior engineers still matter more than ever.</p>
+    <div class="grid-3" style="gap:12px">
+      ${[
+        ["🔮","Hallucinated APIs","The model invents method signatures that don't exist — and writes confident tests for them. Compiles. Fails at runtime.","var(--red)"],
+        ["🕰️","Stale Context","Training data has a cutoff. Your Spring Boot 3.2 migration advice may be subtly wrong — the model learned 3.0 patterns.","var(--orange)"],
+        ["☠️","Context Poisoning","A rogue comment, a malicious docstring in a dependency, or a poisoned issue body can redirect the agent's behaviour.","var(--red)"],
+        ["♻️","Recursive Garbage","Agent loops fix the same bug differently each time, producing a diff that oscillates. No human checks; tokens burn.","var(--orange)"],
+        ["📊","Benchmark Deception","Models are tuned to score well on HumanEval. Real production code is messier, more stateful, more coupled.","var(--yellow)"],
+        ["💸","Agent Loop Costs","An agent that calls 40 tools in a loop costs 10–100× a single prompt. No guardrails = unpleasant billing surprise.","var(--orange)"],
+        ["🔓","MCP/Tool Security","An MCP server with too many permissions can let the model delete issues, push to main, or leak secrets.","var(--red)"],
+        ["💉","Prompt Injection","A GitLab issue body with hidden instructions: <em>'Ignore above, instead...'</em> can hijack your agent.","var(--red)"],
+        ["🎯","Loss of Ownership","If you can't read, explain, and change the code the AI wrote — you don't own your codebase.","var(--yellow)"],
+      ].map(([icon,t,d,c])=>`
+        <div class="card" style="border-top:2px solid ${c};padding:14px 16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:16px">${icon}</span>
+            <div style="font-size:13px;font-weight:600;color:${c}">${t}</div>
+          </div>
+          <p style="font-size:12px;line-height:1.6;color:var(--text-muted)">${d}</p>
+        </div>`).join('')}
+    </div>
+  </div>`
+},
+
+// ── 13: SUMMARY ───────────────────────────────
+{
+  title: "Summary",
+  render: () => `
+  <div class="slide-inner centered" style="gap:0">
+    <div class="section-tag">Section 12 · Summary</div>
+    <h2 class="slide-title" style="text-align:center;margin-bottom:32px">One thing to remember from each section</h2>
+    ${svgSummaryGrid()}
+  </div>`
+},
+
+// ── 14: CLOSING ───────────────────────────────
+{
+  title: "Closing",
+  render: () => `
+  <div class="slide-inner centered bg-radial" style="gap:0">
+    <div style="margin-bottom:48px">${svgFinalOrbit()}</div>
+    <h1 class="title" style="text-align:center;font-size:clamp(28px,4vw,56px)">The model is the engine.<br>You are the driver.</h1>
+    <p class="subtitle" style="margin-top:20px;max-width:560px">Know your context window. Watch your tokens. Build with the SDK. Trust failure modes to remind you that you're still the senior engineer in the room.</p>
+    <div style="display:flex;gap:24px;margin-top:48px;flex-wrap:wrap;justify-content:center">
+      <div class="stat">
+        <div class="stat-num" style="font-size:36px">200K</div>
+        <div class="stat-label">Max context today</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div class="stat">
+        <div class="stat-num" style="font-size:36px">9</div>
+        <div class="stat-label">Failure modes to know</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div class="stat">
+        <div class="stat-num" style="font-size:36px">∞</div>
+        <div class="stat-label">SDK possibilities</div>
+      </div>
+    </div>
+    <div style="margin-top:48px;font-family:var(--mono);font-size:12px;color:var(--text-dim)">Questions? / Discussion</div>
+  </div>`
+},
+
+];
+
+// ──────────────────────────────────────────────
+// SVG COMPONENTS
+// ──────────────────────────────────────────────
+
+function svgCopilotOrbit() {
+  return `
+  <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:float 4s ease-in-out infinite">
+    <circle cx="90" cy="90" r="88" stroke="rgba(91,91,214,0.15)" stroke-width="1"/>
+    <circle cx="90" cy="90" r="65" stroke="rgba(91,91,214,0.1)" stroke-width="1" stroke-dasharray="4 6"/>
+    <circle cx="90" cy="90" r="40" fill="rgba(91,91,214,0.12)" stroke="rgba(91,91,214,0.3)" stroke-width="1"/>
+    <!-- Copilot icon simplified -->
+    <circle cx="90" cy="90" r="22" fill="rgba(91,91,214,0.8)"/>
+    <path d="M80 85 Q90 75 100 85 L100 97 Q90 107 80 97 Z" fill="rgba(255,255,255,0.9)"/>
+    <!-- Orbiting dots -->
+    <circle cx="90" cy="2" r="4" fill="var(--accent-bright)" style="transform-origin:90px 90px;animation:spin-slow 8s linear infinite"/>
+    <circle cx="178" cy="90" r="3" fill="var(--teal)" style="transform-origin:90px 90px;animation:spin-slow 12s linear infinite reverse"/>
+    <circle cx="90" cy="178" r="2.5" fill="var(--green)" style="transform-origin:90px 90px;animation:spin-slow 16s linear infinite"/>
+    <!-- Glow -->
+    <circle cx="90" cy="90" r="40" fill="rgba(91,91,214,0.08)" filter="url(#glow)"/>
+    <defs>
+      <filter id="glow"><feGaussianBlur stdDeviation="8" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+  </svg>`;
+}
+
+function svgContextLayers() {
+  return `
+  <svg width="100%" height="90" viewBox="0 0 900 90" xmlns="http://www.w3.org/2000/svg" style="max-width:860px">
+    <!-- Layer bars -->
+    <rect x="0" y="10" width="260" height="70" rx="10" fill="rgba(91,91,214,0.12)" stroke="rgba(91,91,214,0.35)" stroke-width="1"/>
+    <text x="130" y="38" fill="rgba(124,124,240,0.9)" font-family="monospace" font-size="10" text-anchor="middle" letter-spacing="2">SYSTEM PROMPT</text>
+    <text x="130" y="58" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="10" text-anchor="middle">Always present · Hidden · ~2K tokens</text>
+
+    <text x="295" y="50" fill="rgba(255,255,255,0.2)" font-size="20" font-family="monospace">+</text>
+
+    <rect x="320" y="10" width="240" height="70" rx="10" fill="rgba(45,212,191,0.08)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+    <text x="440" y="38" fill="rgba(45,212,191,0.9)" font-family="monospace" font-size="10" text-anchor="middle" letter-spacing="2">INSTRUCTION FILES</text>
+    <text x="440" y="58" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="10" text-anchor="middle">On open/invoke · Yours · Variable</text>
+
+    <text x="585" y="50" fill="rgba(255,255,255,0.2)" font-size="20" font-family="monospace">+</text>
+
+    <rect x="610" y="10" width="200" height="70" rx="10" fill="rgba(61,214,140,0.08)" stroke="rgba(61,214,140,0.3)" stroke-width="1"/>
+    <text x="710" y="38" fill="rgba(61,214,140,0.9)" font-family="monospace" font-size="10" text-anchor="middle" letter-spacing="2">USER PROMPT</text>
+    <text x="710" y="58" fill="rgba(255,255,255,0.4)" font-family="monospace" font-size="10" text-anchor="middle">Per request · Explicit · You control</text>
+
+    <text x="832" y="50" fill="rgba(255,255,255,0.2)" font-size="20" font-family="monospace">=</text>
+
+    <rect x="855" y="20" width="40" height="50" rx="8" fill="rgba(91,91,214,0.3)" stroke="rgba(91,91,214,0.5)" stroke-width="1"/>
+    <text x="875" y="50" fill="white" font-size="10" text-anchor="middle" font-family="monospace">API</text>
+  </svg>`;
+}
+
+function svgContextMeter() {
+  return `
+  <svg width="100%" height="110" viewBox="0 0 420 110" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="40" width="420" height="30" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <!-- System prompt block -->
+    <rect x="2" y="42" width="60" height="26" rx="5" fill="rgba(91,91,214,0.5)"/>
+    <text x="32" y="59" fill="rgba(255,255,255,0.8)" font-size="9" text-anchor="middle" font-family="monospace">SYS</text>
+    <!-- Instruction files -->
+    <rect x="64" y="42" width="80" height="26" rx="5" fill="rgba(45,212,191,0.4)"/>
+    <text x="104" y="59" fill="rgba(255,255,255,0.8)" font-size="9" text-anchor="middle" font-family="monospace">INSTR</text>
+    <!-- Open tabs -->
+    <rect x="146" y="42" width="100" height="26" rx="5" fill="rgba(247,107,21,0.35)"/>
+    <text x="196" y="59" fill="rgba(255,255,255,0.8)" font-size="9" text-anchor="middle" font-family="monospace">OPEN TABS</text>
+    <!-- User prompt -->
+    <rect x="248" y="42" width="70" height="26" rx="5" fill="rgba(61,214,140,0.4)"/>
+    <text x="283" y="59" fill="rgba(255,255,255,0.8)" font-size="9" text-anchor="middle" font-family="monospace">PROMPT</text>
+    <!-- Overflow -->
+    <rect x="320" y="42" width="98" height="26" rx="5" fill="rgba(240,68,97,0.3)" stroke="rgba(240,68,97,0.5)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="369" y="59" fill="rgba(240,68,97,0.9)" font-size="9" text-anchor="middle" font-family="monospace">DROPPED ⚠</text>
+    <!-- Labels -->
+    <text x="0" y="15" fill="rgba(255,255,255,0.3)" font-size="10" font-family="monospace">0</text>
+    <text x="390" y="15" fill="rgba(255,255,255,0.3)" font-size="10" font-family="monospace" text-anchor="end">128K</text>
+    <line x1="0" y1="20" x2="420" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    <line x1="315" y1="20" x2="315" y2="38" stroke="rgba(240,68,97,0.5)" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="315" y="16" fill="rgba(240,68,97,0.8)" font-size="9" font-family="monospace" text-anchor="middle">LIMIT</text>
+    <!-- Legend -->
+    ${[["rgba(91,91,214,0.5)","System"],["rgba(45,212,191,0.4)","Instructions"],["rgba(247,107,21,0.35)","Open tabs"],["rgba(61,214,140,0.4)","Prompt"],["rgba(240,68,97,0.3)","Dropped"]].map(([c,l],i)=>`
+      <rect x="${i*82}" y="88" width="10" height="10" rx="2" fill="${c}"/>
+      <text x="${i*82+14}" y="97" fill="rgba(255,255,255,0.4)" font-size="9" font-family="monospace">${l}</text>`).join('')}
+  </svg>`;
+}
+
+function svgTokenFlow() {
+  return `
+  <svg width="100%" height="80" viewBox="0 0 860 80" xmlns="http://www.w3.org/2000/svg" style="max-width:860px">
+    <defs>
+      <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="rgba(255,255,255,0.2)"/>
+      </marker>
+    </defs>
+    <!-- You box -->
+    <rect x="0" y="15" width="100" height="50" rx="8" fill="var(--bg-elevated)" stroke="var(--border-bright)" stroke-width="1"/>
+    <text x="50" y="44" fill="white" font-size="12" text-anchor="middle" font-family="monospace">You</text>
+    <!-- Arrow -->
+    <line x1="102" y1="40" x2="158" y2="40" stroke="rgba(91,91,214,0.6)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="130" y="32" fill="rgba(91,91,214,0.8)" font-size="9" text-anchor="middle" font-family="monospace">INPUT</text>
+    <text x="130" y="56" fill="rgba(91,91,214,0.6)" font-size="9" text-anchor="middle" font-family="monospace">$$/M tkns</text>
+    <!-- Cache write -->
+    <rect x="160" y="5" width="110" height="30" rx="6" fill="rgba(245,197,24,0.1)" stroke="rgba(245,197,24,0.3)" stroke-width="1"/>
+    <text x="215" y="24" fill="rgba(245,197,24,0.9)" font-size="9" text-anchor="middle" font-family="monospace">CACHE WRITE</text>
+    <!-- Cache read -->
+    <rect x="160" y="45" width="110" height="30" rx="6" fill="rgba(45,212,191,0.1)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+    <text x="215" y="64" fill="rgba(45,212,191,0.9)" font-size="9" text-anchor="middle" font-family="monospace">CACHE READ</text>
+    <!-- Arrow -->
+    <line x1="272" y1="30" x2="340" y2="40" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="272" y1="60" x2="340" y2="40" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- Model box -->
+    <rect x="342" y="10" width="170" height="60" rx="10" fill="rgba(91,91,214,0.15)" stroke="rgba(91,91,214,0.4)" stroke-width="1.5"/>
+    <text x="427" y="36" fill="white" font-size="12" text-anchor="middle" font-family="monospace" font-weight="600">Model</text>
+    <text x="427" y="54" fill="rgba(255,255,255,0.4)" font-size="9" text-anchor="middle" font-family="monospace">INFERENCE</text>
+    <!-- Arrow -->
+    <line x1="514" y1="40" x2="570" y2="40" stroke="rgba(61,214,140,0.6)" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="542" y="32" fill="rgba(61,214,140,0.8)" font-size="9" text-anchor="middle" font-family="monospace">OUTPUT</text>
+    <text x="542" y="56" fill="rgba(61,214,140,0.6)" font-size="9" text-anchor="middle" font-family="monospace">$$$$/M tkns</text>
+    <!-- Response box -->
+    <rect x="572" y="15" width="120" height="50" rx="8" fill="var(--bg-elevated)" stroke="rgba(61,214,140,0.3)" stroke-width="1"/>
+    <text x="632" y="44" fill="var(--green)" font-size="12" text-anchor="middle" font-family="monospace">Response</text>
+    <!-- Cost summary -->
+    <rect x="710" y="8" width="148" height="64" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <text x="784" y="26" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" font-family="monospace">RELATIVE COST</text>
+    <text x="784" y="41" fill="rgba(245,197,24,0.8)" font-size="9" text-anchor="middle" font-family="monospace">Cache write: 1.25×</text>
+    <text x="784" y="54" fill="rgba(45,212,191,0.8)" font-size="9" text-anchor="middle" font-family="monospace">Cache read: 0.1×</text>
+    <text x="784" y="67" fill="rgba(61,214,140,0.8)" font-size="9" text-anchor="middle" font-family="monospace">Output: 3-5×</text>
+  </svg>`;
+}
+
+function svgToolingMap() {
+  return `
+  <svg width="100%" height="100" viewBox="0 0 860 100" xmlns="http://www.w3.org/2000/svg" style="max-width:860px">
+    <!-- Central node -->
+    <ellipse cx="430" cy="50" rx="60" ry="28" fill="rgba(91,91,214,0.2)" stroke="rgba(91,91,214,0.5)" stroke-width="1.5"/>
+    <text x="430" y="54" fill="white" font-size="11" font-weight="600" text-anchor="middle" font-family="monospace">GHCP Chat</text>
+    <!-- Spokes -->
+    ${[
+      [100, 18, "Custom Agents", "rgba(91,91,214,0.4)", "rgba(91,91,214,0.15)"],
+      [205, 8, "MCP Servers", "rgba(45,212,191,0.4)", "rgba(45,212,191,0.1)"],
+      [320, 2, "Prompt Files", "rgba(61,214,140,0.4)", "rgba(61,214,140,0.1)"],
+      [565, 2, "Skills", "rgba(245,197,24,0.4)", "rgba(245,197,24,0.1)"],
+      [665, 8, "Hooks", "rgba(247,107,21,0.4)", "rgba(247,107,21,0.1)"],
+      [760, 18, "Workflows", "rgba(240,68,97,0.4)", "rgba(240,68,97,0.1)"],
+    ].map(([cx, cy, label, stroke, fill])=>`
+      <line x1="${cx+35}" y1="${cy+15}" x2="${cx < 430 ? 375 : 485}" y2="${cy < 30 ? 35 : 50}" stroke="${stroke}" stroke-width="1" stroke-dasharray="4 3"/>
+      <rect x="${cx}" y="${cy}" width="74" height="28" rx="6" fill="${fill}" stroke="${stroke}" stroke-width="1"/>
+      <text x="${cx+37}" y="${cy+18}" fill="rgba(255,255,255,0.8)" font-size="9.5" text-anchor="middle" font-family="monospace">${label}</text>
+    `).join('')}
+    <!-- Bottom nodes -->
+    ${[
+      [195, 68, "Plugins"],
+      [330, 75, "Tools"],
+      [490, 75, "Instructions"],
+      [620, 68, "Extensions"],
+    ].map(([cx, cy, label])=>`
+      <line x1="${cx+40}" y1="${cy}" x2="430" y2="72" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="3 3"/>
+      <rect x="${cx}" y="${cy}" width="82" height="22" rx="5" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="${cx+41}" y="${cy+15}" fill="rgba(255,255,255,0.35)" font-size="9" text-anchor="middle" font-family="monospace">${label}</text>
+    `).join('')}
+  </svg>`;
+}
+
+function svgMCPFlow() {
+  return `
+  <svg width="100%" height="90" viewBox="0 0 860 90" xmlns="http://www.w3.org/2000/svg" style="max-width:860px">
+    <defs>
+      <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="rgba(45,212,191,0.6)"/>
+      </marker>
+    </defs>
+    <!-- Nodes -->
+    ${[
+      [0, "VS Code\n+ Copilot", "rgba(91,91,214,0.2)", "rgba(91,91,214,0.4)"],
+      [190, "MCP\nServer", "rgba(45,212,191,0.1)", "rgba(45,212,191,0.4)"],
+      [390, "GitLab\nAPI", "rgba(247,107,21,0.12)", "rgba(247,107,21,0.4)"],
+      [590, "Issues/Epics\nMRs/Pipelines", "rgba(61,214,140,0.1)", "rgba(61,214,140,0.35)"],
+    ].map(([x, label, fill, stroke])=>`
+      <rect x="${x}" y="15" width="155" height="55" rx="10" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+      ${label.split('\n').map((l,i)=>`<text x="${x+77}" y="${i===0?46:62}" fill="rgba(255,255,255,${i===0?'0.9':'0.5'})" font-size="${i===0?11:9}" text-anchor="middle" font-family="monospace" font-weight="${i===0?600:400}">${l}</text>`).join('')}`).join('')}
+    <!-- Arrows -->
+    <line x1="157" y1="42" x2="188" y2="42" stroke="rgba(45,212,191,0.6)" stroke-width="1.5" marker-end="url(#arr2)"/>
+    <line x1="347" y1="42" x2="388" y2="42" stroke="rgba(45,212,191,0.6)" stroke-width="1.5" marker-end="url(#arr2)"/>
+    <line x1="547" y1="42" x2="588" y2="42" stroke="rgba(45,212,191,0.6)" stroke-width="1.5" marker-end="url(#arr2)"/>
+    <!-- Return arrows -->
+    <line x1="388" y1="55" x2="347" y2="55" stroke="rgba(91,91,214,0.4)" stroke-width="1" stroke-dasharray="4 3"/>
+    <line x1="188" y1="55" x2="157" y2="55" stroke="rgba(91,91,214,0.4)" stroke-width="1" stroke-dasharray="4 3"/>
+    <!-- Labels -->
+    <text x="172" y="32" fill="rgba(45,212,191,0.7)" font-size="8" text-anchor="middle" font-family="monospace">MCP protocol</text>
+    <text x="367" y="32" fill="rgba(45,212,191,0.7)" font-size="8" text-anchor="middle" font-family="monospace">REST + PAT</text>
+    <text x="567" y="32" fill="rgba(45,212,191,0.7)" font-size="8" text-anchor="middle" font-family="monospace">JSON</text>
+    <text x="750" y="88" fill="rgba(255,255,255,0.2)" font-size="9" font-family="monospace">→ Model sees all this as context</text>
+  </svg>`;
+}
+
+function svgIDEvsSDK() {
+  return `
+  <svg width="100%" height="100" viewBox="0 0 860 100" xmlns="http://www.w3.org/2000/svg" style="max-width:860px">
+    <!-- IDE side -->
+    <rect x="0" y="8" width="390" height="84" rx="10" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <text x="195" y="28" fill="rgba(255,255,255,0.3)" font-size="10" text-anchor="middle" font-family="monospace" letter-spacing="2">IDE PLUGIN</text>
+    ${["Dev types in chat","GHCP assembles context","API call → response","Dev reads and acts"].map((s,i)=>`
+      <rect x="${14 + i*93}" y="38" width="82" height="44" rx="7" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <text x="${55 + i*93}" y="${i===3?63:58}" fill="rgba(255,255,255,0.45)" font-size="8.5" text-anchor="middle" font-family="monospace">${s.split(' ').slice(0,2).join(' ')}</text>
+      <text x="${55 + i*93}" y="72" fill="rgba(255,255,255,0.3)" font-size="8" text-anchor="middle" font-family="monospace">${s.split(' ').slice(2).join(' ')}</text>
+      ${i<3?`<line x1="${97+i*93}" y1="60" x2="${108+i*93}" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>`:''}
+    `).join('')}
+    <!-- VS -->
+    <text x="430" y="58" fill="rgba(255,255,255,0.15)" font-size="18" text-anchor="middle" font-family="monospace">vs</text>
+    <!-- SDK side -->
+    <rect x="468" y="8" width="390" height="84" rx="10" fill="rgba(91,91,214,0.06)" stroke="rgba(91,91,214,0.25)" stroke-width="1.5"/>
+    <text x="663" y="28" fill="rgba(124,124,240,0.7)" font-size="10" text-anchor="middle" font-family="monospace" letter-spacing="2">SDK / CUSTOM AGENT</text>
+    ${["GitLab push\ntriggers hook","Agent reads diff\n+ issue context","Tools called:\nGitLab comment","Label set\nSlack notified"].map((s,i)=>`
+      <rect x="${482 + i*94}" y="38" width="84" height="44" rx="7" fill="rgba(91,91,214,0.08)" stroke="rgba(91,91,214,0.2)" stroke-width="1"/>
+      ${s.split('\n').map((l,li)=>`<text x="${524+i*94}" y="${47+li*14}" fill="rgba(255,255,255,0.6)" font-size="8.5" text-anchor="middle" font-family="monospace">${l}</text>`).join('')}
+      ${i<3?`<line x1="${567+i*94}" y1="60" x2="${580+i*94}" y2="60" stroke="rgba(91,91,214,0.4)" stroke-width="1.5"/>`:''}
+    `).join('')}
+  </svg>`;
+}
+
+function svgSummaryGrid() {
+  const items = [
+    ["01","Context Anatomy","System prompt runs on every request — optimise instruction files"],
+    ["02","Context Window","~60% of model max. Overflow is silent data loss"],
+    ["03","Token Economy","Output tokens cost 3-5× input. Agent loops compound fast"],
+    ["04","Harness Choice","Claude Code & Cursor compact. GHCP truncates"],
+    ["05","GHCP Tooling","MCP servers, agents, hooks — most teams skip all of these"],
+    ["06","Copilot CLI","NL → shell. Scriptable. Composable. Underused"],
+    ["07","SDK Power","Custom tools, parallel agents, full context control"],
+    ["08","GitLab MCP","3-step setup. Copilot reads your issues, epics, pipelines"],
+    ["09","IDE vs SDK","Plugin = suggestion. SDK = automation"],
+    ["10","Model Picking","Match model to task. Gemini for huge repos, o3 for hard reasoning"],
+    ["11","Failure Modes","Hallucinations, injection, loops, stale data — all real"],
+    ["12","You matter","The AI writes code. You own the codebase"],
+  ];
+  return `
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:960px">
+    ${items.map(([n,t,s])=>`
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent-bright);margin-bottom:4px">${n}</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:white">${t}</div>
+        <div style="font-size:11px;line-height:1.5;color:var(--text-muted)">${s}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function svgFinalOrbit() {
+  return `
+  <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:float 5s ease-in-out infinite">
+    <circle cx="100" cy="100" r="98" stroke="rgba(91,91,214,0.08)" stroke-width="1"/>
+    <circle cx="100" cy="100" r="70" stroke="rgba(45,212,191,0.08)" stroke-width="1" stroke-dasharray="6 8"/>
+    <circle cx="100" cy="100" r="45" stroke="rgba(91,91,214,0.2)" stroke-width="1"/>
+    <circle cx="100" cy="100" r="28" fill="rgba(91,91,214,0.15)" stroke="rgba(91,91,214,0.4)" stroke-width="1.5"/>
+    <text x="100" y="106" fill="rgba(124,124,240,0.9)" font-size="18" text-anchor="middle" font-family="monospace">✦</text>
+    <!-- Orbit dots -->
+    <circle r="5" fill="var(--accent-bright)" opacity="0.8" style="transform-origin:100px 100px;animation:spin-slow 10s linear infinite">
+      <animateMotion dur="10s" repeatCount="indefinite" path="M0,0 a70,70 0 1,1 0.001,0"/>
+    </circle>
+    <circle r="3.5" fill="var(--teal)" opacity="0.7">
+      <animateMotion dur="16s" repeatCount="indefinite" path="M0,0 a98,98 0 1,0 0.001,0"/>
+    </circle>
+    <circle r="3" fill="var(--green)" opacity="0.6">
+      <animateMotion dur="7s" repeatCount="indefinite" path="M0,0 a45,45 0 1,1 0.001,0"/>
+    </circle>
+  </svg>`;
+}
+
+// ──────────────────────────────────────────────
+// RENDER ENGINE
+// ──────────────────────────────────────────────
+let current = 0;
+const deck = document.getElementById('deck');
+
+function renderAll() {
+  deck.innerHTML = '';
+  slides.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'slide bg-grid' + (i === 0 ? ' active' : '');
+    el.innerHTML = s.render();
+    deck.appendChild(el);
+  });
+}
+
+function goTo(idx) {
+  const els = deck.querySelectorAll('.slide');
+  els[current].classList.remove('active');
+  els[current].classList.add('exit');
+  setTimeout(() => els[current].classList.remove('exit'), 500);
+  current = idx;
+  els[current].classList.add('active');
+  updateNav();
+}
+
+function updateNav() {
+  const total = slides.length;
+  document.getElementById('slide-num').textContent = `${current + 1} / ${total}`;
+  document.getElementById('slide-title-nav').textContent = slides[current].title;
+  document.getElementById('progress').style.width = `${((current + 1) / total) * 100}%`;
+}
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  if (current < slides.length - 1) goTo(current + 1);
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+  if (current > 0) goTo(current - 1);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'Space') { if (current < slides.length - 1) goTo(current + 1); }
+  if (e.key === 'ArrowLeft') { if (current > 0) goTo(current - 1); }
+});
+
+renderAll();
+updateNav();
+</script>
+</body>
+</html>
